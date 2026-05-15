@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Auth;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,7 +25,7 @@ class RegisterPatientRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255','min:2'],
             'last_name' => ['required', 'string', 'max:255','min:2'],
-            'phone'=>['required','string','regex:/^[0-9]{10}$/'],
+            'phone'=>['required','string','regex:/^([0-9\s\-\+\(\)]*)$/','unique:users,phone'],
             'password' => ['required', 'string','confirmed'],
             'gender'=>['required','string','in:male,female,other'],
             'profile_image'=>['image','nullable'],

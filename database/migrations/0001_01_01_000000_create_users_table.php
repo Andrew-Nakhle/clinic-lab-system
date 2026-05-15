@@ -21,8 +21,13 @@ return new class extends Migration
             $table->string('password');
             $table->string('gender');
             $table->date('birth_date');
-            $table->enum('role', ['doctor', 'patient', 'secretary','admin'])->default('patient');
+
+//            $table->enum('role', ['doctor', 'patient', 'secretary','admin'])->default('patient');
             $table->enum('status', ['active', 'inactive','delete'])->default('active');
+
+            $table->string('otp_code')->nullable();
+            $table->dateTime('otp_expires_at')->nullable();
+            $table->integer('otp_attempts')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });

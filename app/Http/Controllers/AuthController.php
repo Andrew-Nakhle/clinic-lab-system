@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterPatientRequest;
-use App\Http\Requests\StoreDoctorRequest;
-use App\Http\Requests\StoreSecretaryRequest;
-use App\Http\Resources\Auth\loginResource;
+use App\Http\Requests\Auth\LoginManagersRequest;
+use App\Http\Requests\Auth\LoginUserRequest;
+use App\Http\Requests\Auth\RegisterDoctorRequest;
+use App\Http\Requests\Auth\RegisterPatientRequest;
+use App\Http\Requests\Auth\RegisterSecretaryRequest;
 use App\Http\Resources\Auth\RegisterResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
+use Database\Seeders\RolePermissionSeeder;
 class AuthController extends Controller
 {
 public function registerPatient(RegisterPatientRequest $request){
@@ -34,13 +34,13 @@ public function registerPatient(RegisterPatientRequest $request){
         'last_name'=>$validated['last_name'],
         'phone'=>$validated['phone'],
         'password'=>$validated['password'],
-        'role'=>'patient',
+//        'role'=>'patient',
         'gender'=>$validated['gender'],
             'birth_date'=>$validated['birth_date'],
     ]
 
     );
-
+    $user->assignRole('patient');
     $user->patient()->create([
     'blood_group'=>$validated['blood_group'],
     'weight'=>$validated['weight'],
@@ -49,6 +49,7 @@ public function registerPatient(RegisterPatientRequest $request){
         'profile_image'=>$validated['profile_image']??null,
 
         ]);
+
     $user->load('patient');
     return response()->json([
         'message'=>'Patient Registered Successfully',
@@ -57,10 +58,12 @@ public function registerPatient(RegisterPatientRequest $request){
 
 
 }
-public function registerDoctor(StoreDoctorRequest $request){
+public function registerDoctor(RegisterDoctorRequest $request){
 
     $validated=$request->validated();
-
+    if ($request->hasFile('profile_image')){
+        $validated['profile_image']=$request->file('profile_image')->store('profile_images','public');
+    }
 
     $validated['password']=Hash::make($validated['password']);
 
@@ -71,13 +74,14 @@ public function registerDoctor(StoreDoctorRequest $request){
     'email'=>$validated['email'],
     'phone'=>$validated['phone'],
     'password'=>$validated['password'],
-    'role'=>'doctor',
     'gender'=>$validated['gender'],
         'birth_date'=>$validated['birth_date'],
+
     ]);
-
+    $user->assignRole('doctor');
     $user->doctor()->create([
-
+        'profile_image'=>$validated['profile_image']?? null,
+        'section_id'=>$validated['section_id'],
         ]);
     $user->load('doctor');//load information from the model of user to bring the information about the patient
     return response()->json([
@@ -85,7 +89,7 @@ public function registerDoctor(StoreDoctorRequest $request){
     'user'=>new registerResource($user)
     ],201);
 }
-public function registerSecretary(StoreSecretaryRequest $request){
+public function registerSecretary(RegisterSecretaryRequest $request){
     $validated=$request->validated();
     $validated['password']=Hash::make($validated['password']);
     $user=User::create([
@@ -94,12 +98,13 @@ public function registerSecretary(StoreSecretaryRequest $request){
         'email'=>$validated['email'],
         'phone'=>$validated['phone'],
         'password'=>$validated['password'],
-        'role'=>'secretary',
+//        'role'=>'secretary',
         'gender'=>$validated['gender'],
         'birth_date'=>$validated['birth_date'],
     ]);
+    $user->assignRole('secretary');
     $user->secretary()->create([
-        'section'=>$validated['section'],
+        'section_id'=>$validated['section_id'],
     ]);
     $user->load('secretary');
     return response()->json([
@@ -107,23 +112,45 @@ public function registerSecretary(StoreSecretaryRequest $request){
         'user'=>new registerResource($user)
     ],201);
 }
-public function login(LoginRequest $request){
+public function loginUser(LoginUserRequest $request){
 $validated=$request->validated();
-    $field = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
-//if (!Auth::attempt($request->only($field,'password')))
-    if (!Auth::attempt([$field => $request->login, 'password' => $request->password])) {
+if (!Auth::attempt($request->only('phone','password')))
+  {
     return response()->json([
         'message'=>'Invalid Credentials'
     ],401);
 }
-$user=Auth::user();
-$token=$user->createToken('authToken')->plainTextToken;
-    return response()->json([
-        'message'=>'Login Successful',
-        'token' => $token,
-        'user' => $user
-    ]);
+$user=User::where('phone',$validated['phone'])->firstOrFail();
+    $user->generateOtpCode();
+$otp=$user->otp_code;
+    app(\App\Services\UltraMsgService::class)->sendOtp($user->phone, $otp);
+return response()->json([
+'message'=>'please check your whatsapp number',
+]);
+//$token=$user->createToken('authToken')->plainTextToken;
+//    return response()->json([
+//        'message'=>'Login Successful',
+//        'token' => $token,
+//        'user' => $user
+//    ]);
 }
+
+    public function loginManager(LoginManagersRequest $request){
+        $validated=$request->validated();
+        if (!Auth::attempt($request->only('email','password')))
+        {
+            return response()->json([
+                'message'=>'Invalid Credentials'
+            ],401);
+        }
+        $user=User::where('email',$validated['email'])->firstOrFail();
+        $token=$user->createToken('authToken')->plainTextToken;
+        return response()->json([
+            'message'=>'Login Successful',
+            'token' => $token,
+            'user' => $user
+        ]);
+    }
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

@@ -16,6 +16,7 @@ class PatientProfile extends Model
        'tall',
        'id_card',
        'profile_image',
+       'section_id',
    ];
    public function user()
    {

@@ -19,6 +19,7 @@ class RegisterResource extends JsonResource
             'first_name'=>$this->first_name,
             'last_name'=>$this->last_name,
             'phone'=>$this->phone,
+            'email'=>$this->email,
             'gender'=>$this->gender,
             'birth_date'=>$this->birth_date,
             'profile'=>$this->getProfileData()
@@ -28,15 +29,16 @@ class RegisterResource extends JsonResource
     private function getProfileData()
     {
 
-        if ($this->role=='doctor'){
+        if ($this->hasRole('doctor')){
             return [
+                'prfile_image'=> url('storage/'.$this->doctor->profile_image),
                 'specialization' => $this->doctor->specialization ?? null,
                 'experience_years' => $this->doctor->experience_years ?? null,
                 'certification' => $this->doctor->certification ? url('storage/'.$this->doctor->certification): null,
                 'bio' => $this->bio ?? null,
             ];
         }
-        if ($this->role=='patient'){
+        if ($this->hasRole('patient')){
             return [
                 'tall'=>$this->patient->tall ,
                 'weight'=>$this->patient->weight ,
@@ -46,9 +48,9 @@ class RegisterResource extends JsonResource
 
             ];
         }
-        if ($this->role=='secretary'){
+        if ($this->hasRole('secretary')){
             return[
-                'section'=>$this->secretary->section
+                'section_id'=>$this->secretary->section_id
             ];
         }
     }

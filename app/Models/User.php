@@ -27,9 +27,17 @@ class User extends Authenticatable
         'email',
         'password',
         'gender',
-        'role',
         'birth_date',
+        'otp_code',
+
     ];
+    public  function generateOtpCode(){
+        $this->otp_code=rand(100000,999999);
+        $this->otp_expires_at=now()->addMinutes(10);
+        $this->timestamps=false;
+        $this->save();
+    }
+
     public function doctor(){
         return $this->hasOne(DoctorProfile::class);
     }

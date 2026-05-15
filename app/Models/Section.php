@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Section extends Model
 {
+
     protected $table = 'sections';
     public function secretary(){
         return $this->hasOne(SecretaryProfile::class);
