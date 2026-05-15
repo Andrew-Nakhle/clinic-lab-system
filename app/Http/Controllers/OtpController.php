@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Auth\LoginResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -12,6 +13,7 @@ class OtpController extends Controller
             $validated = $request->validate(['otp_code'=>['required'],
             'phone' =>['required']]);
             $user = User::where('phone', $validated['phone'])->first();
+
            if(!$user){
                return response()->json(['message'=>'User not found'],404);
            }
@@ -38,7 +40,7 @@ class OtpController extends Controller
             $user->save();
             $token=$user->createToken('token')->plainTextToken;
             return response()->json(['token'=>$token,
-                'user'=>$user],200);
+                'user'=>new LoginResource($user)],200);
         }
 
         }

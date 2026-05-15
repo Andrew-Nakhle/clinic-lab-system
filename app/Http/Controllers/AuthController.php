@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginManagersRequest;
 use App\Http\Requests\Auth\LoginUserRequest;
+use App\Http\Requests\Auth\RegisterAdminRequest;
 use App\Http\Requests\Auth\RegisterDoctorRequest;
 use App\Http\Requests\Auth\RegisterPatientRequest;
 use App\Http\Requests\Auth\RegisterSecretaryRequest;
+use App\Http\Resources\Auth\LoginResource;
 use App\Http\Resources\Auth\RegisterResource;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -112,6 +114,17 @@ public function registerSecretary(RegisterSecretaryRequest $request){
         'user'=>new registerResource($user)
     ],201);
 }
+public function registerAdmin(RegisterAdminRequest $request)
+{
+$validated=$request->validated();
+$validated['password']=Hash::make($validated['password']);
+$user=User::create($validated);
+$user->assignRole('admin');
+return response()->json([
+    'message'=>'Admin Registered Successfully',
+    'user'=>new registerResource($user)
+]);
+}
 public function loginUser(LoginUserRequest $request){
 $validated=$request->validated();
 if (!Auth::attempt($request->only('phone','password')))
@@ -144,11 +157,12 @@ return response()->json([
             ],401);
         }
         $user=User::where('email',$validated['email'])->firstOrFail();
+        $user['role']=$user->getRoleNames()->first();
         $token=$user->createToken('authToken')->plainTextToken;
         return response()->json([
             'message'=>'Login Successful',
             'token' => $token,
-            'user' => $user
+            'user' => new loginResource($user)
         ]);
     }
     public function logout(Request $request)

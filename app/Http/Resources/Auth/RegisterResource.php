@@ -22,6 +22,7 @@ class RegisterResource extends JsonResource
             'email'=>$this->email,
             'gender'=>$this->gender,
             'birth_date'=>$this->birth_date,
+            'role' => $this->getRoleNames()->first(),
             'profile'=>$this->getProfileData()
 
         ];

@@ -22,7 +22,9 @@ Route::group(['prefix'=>'auth'],function(){
     Route::post('/register/patient', [AuthController::class, 'registerPatient']);
     Route::post('/register/doctor', [AuthController::class, 'registerDoctor']);
     Route::post('/register/secretary', [AuthController::class, 'registerSecretary']);
+    Route::post('/register/admin', [AuthController::class, 'registerAdmin'])->middleware(['auth:sanctum','permission:register admin']);
     Route::post('logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
+
 });
 Route::group(['api'],function(){
     Route::post('verifyOtp',[otpController::class,'verifyLoginOtp']);
