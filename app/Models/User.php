@@ -14,23 +14,25 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles,HasApiTokens;
-    protected $guard_name = 'web';
+    //protected $guard_name = 'web';
+    protected $guard_name = 'api';
+
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'first_name',
-        'last_name',
-        'phone',
-        'email',
-        'password',
-        'gender',
-        'birth_date',
-        'otp_code',
+        protected $fillable = [
+            'first_name',
+            'last_name',
+            'phone',
+            'email',
+            'password',
+            'gender',
+            'birth_date',
+            'otp_code',
 
-    ];
+        ];
     public  function generateOtpCode(){
         $this->otp_code=rand(100000,999999);
         $this->otp_expires_at=now()->addMinutes(10);

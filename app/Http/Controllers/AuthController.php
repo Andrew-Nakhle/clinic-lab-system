@@ -148,23 +148,30 @@ return response()->json([
 //    ]);
 }
 
-    public function loginManager(LoginManagersRequest $request){
-        $validated=$request->validated();
-        if (!Auth::attempt($request->only('email','password')))
-        {
+    public function loginManager(LoginManagersRequest $request)
+    {
+        $validated = $request->validated();
+        if (!auth()->attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message'=>'Invalid Credentials'
-            ],401);
+                'message' => 'Invalid Credentials'
+            ], 401);
         }
-        $user=User::where('email',$validated['email'])->firstOrFail();
-        $user['role']=$user->getRoleNames()->first();
-        $token=$user->createToken('authToken')->plainTextToken;
+        $user = auth()->user();
+        if (! $user->hasAnyRole(['admin', 'manager', 'super_admin'])) {
+            return response()->json([
+                'message' => 'You are not authorized to access manager panel'
+            ], 403);
+        }
+
+        $token = $user->createToken('authToken')->plainTextToken;
+
         return response()->json([
-            'message'=>'Login Successful',
-            'token' => $token,
-            'user' => new loginResource($user)
+            'message' => 'Login Successful',
+            'token'   => $token,
+            'user'    => new LoginResource($user)
         ]);
     }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -173,6 +180,5 @@ return response()->json([
             'message' => 'Logout Successful'
         ],200);
     }
-
 }
 

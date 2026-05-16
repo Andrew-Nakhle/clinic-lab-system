@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\registerPatient;
 use App\Http\Controllers\registerDoORSe;
 use App\Http\Controllers\loginController;
+use App\Http\Controllers\SuperAdminController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -30,5 +31,9 @@ Route::group(['api'],function(){
     Route::post('verifyOtp',[otpController::class,'verifyLoginOtp']);
     Route::post('resendOtp',[otpController::class,'resendLoginOtp']);
 });
-
+//superAdmin
+Route::post('/super-admin', [AuthController::class, 'SuperAdmin']);
+Route::middleware(['auth:sanctum', 'role:super_admin'])->group(function () {
+    Route::get('/super-admin/doctors', [SuperAdminController::class, 'view_doctors']);
+});
 
