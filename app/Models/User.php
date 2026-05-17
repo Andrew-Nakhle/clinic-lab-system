@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -16,6 +17,9 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasRoles,HasApiTokens;
     //protected $guard_name = 'web';
     protected $guard_name = 'api';
+    protected $casts = [
+        'status' => UserStatus::class,
+    ];
 
     /**
      * The attributes that are mass assignable.

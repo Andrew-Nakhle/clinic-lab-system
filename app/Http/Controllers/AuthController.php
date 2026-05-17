@@ -83,7 +83,7 @@ public function registerDoctor(RegisterDoctorRequest $request){
     $user->assignRole('doctor');
     $user->doctor()->create([
         'profile_image'=>$validated['profile_image']?? null,
-        'section_id'=>$validated['section_id'],
+        //'section_id'=>$validated['section_id'],
         ]);
     $user->load('doctor');//load information from the model of user to bring the information about the patient
     return response()->json([
@@ -157,7 +157,7 @@ return response()->json([
             ], 401);
         }
         $user = auth()->user();
-        if (! $user->hasAnyRole(['admin', 'manager', 'super_admin'])) {
+        if (! $user->hasAnyRole(['doctor','admin', 'manager', 'super_admin'])) {
             return response()->json([
                 'message' => 'You are not authorized to access manager panel'
             ], 403);

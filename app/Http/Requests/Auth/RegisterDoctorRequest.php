@@ -29,9 +29,9 @@ class RegisterDoctorRequest extends FormRequest
             'email' => ['required', 'string', 'email','unique:users,email'],
             'password' => ['required', 'string','confirmed'],
             'gender'=>['required','string','in:male,female,other'],
-            'profile_image'=>['required','image'],
+            //'profile_image'=>['required','image'],
             'birth_date'=>['required','date'],
-            'section_id'=>['exists:sections,id','integer'],
+            //'section_id'=>['exists:sections,id','integer'],
 //            'certification'=>['required','image'],
 //            'experience_years'=>['required','integer'],
 

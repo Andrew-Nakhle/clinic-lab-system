@@ -15,13 +15,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('section_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('profile_image');
+            $table->string('profile_image')->nullable();
             $table->string('specialization')->nullable()    ;
 //            $table->string('qualification');
             $table->integer('experience_years')->nullable();
             $table->string('certification')->nullable();//enter when the doctor want to update his profile
             $table->text('bio')->nullable();//enter when the doctor want to update his profile
             $table->timestamps();
+
         });
     }
 
