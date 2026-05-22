@@ -12,10 +12,17 @@ class RoleAssignPermissionSeeder extends Seeder
     public function run(): void
     {
         $superAdmin = Role::where('name', 'super_admin')->first();
-
         if ($superAdmin) {
             $superAdmin->givePermissionTo([
-                'view_doctors'
+                'create_admins',
+                'update_admin',
+                'view_admins',
+                'delete_admin',
+                'manage_taxes',
+                'manage_bonuses',
+                'manage_salaries',
+                'set_minimum_wage',
+                'set_doctor_commission',
             ]);
         }
         $superAdmin = User::firstOrCreate(
