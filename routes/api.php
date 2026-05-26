@@ -8,6 +8,7 @@ use App\Http\Controllers\registerPatient;
 use App\Http\Controllers\registerDoORSe;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\AdminController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -30,7 +31,7 @@ Route::group(['api'],function(){
     Route::post('verifyOtp',[otpController::class,'verifyLoginOtp']);
     Route::post('resendOtp',[otpController::class,'resendLoginOtp']);
 });
-//superAdmin
+//superAdmin/////
 Route::middleware(['auth:sanctum','permission:create_admins|update_admin|view_admins|delete_admin'])->group(function () {
     Route::post('/auth/register/admin', [AuthController::class, 'registerAdmin']);
     Route::patch( '/admin/{id}/status', [SuperAdminController::class, 'update']);
@@ -38,6 +39,12 @@ Route::middleware(['auth:sanctum','permission:create_admins|update_admin|view_ad
     Route::delete('/admin/{id}', [SuperAdminController::class, 'destroy']);
 
 });
+/////ADMIN///////
+Route::middleware(['auth:sanctum','role:admin'])->group(function () {
+Route::post('/auth/register/doctor', [AuthController::class, 'registerDoctor']);
+Route::patch( '/doctor/{id}/status', [AdminController::class, 'updateDoctor']);
+Route::get('/doctors', [AdminController::class, 'viewDoctors']);
+Route::get('/doctor/{id}', [AdminController::class, 'viewDoctor']);
+Route::delete('/doctor/{id}', [AdminController::class, 'delete']);
+});
 
-//Route::get( '/view/doctors', [superAdminController::class, 'viewDoctors'])
-    //->middleware('auth:sanctum', 'permission:view_doctors');

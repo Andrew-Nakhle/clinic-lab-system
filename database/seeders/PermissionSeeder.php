@@ -8,8 +8,9 @@ use Spatie\Permission\Models\Permission;
 class PermissionSeeder extends Seeder
 {
     public function run(): void
-    {   ////////////////////////////////////SUPER_ADMIN/////////////////////////////////////////
+    {
         $permissions = [
+            ////////////////////////////////////SUPER_ADMIN/////////////////////////////////////////
             'create_admins',
             'update_admin',
             'delete_admin',
@@ -19,6 +20,13 @@ class PermissionSeeder extends Seeder
             'manage_salaries',
             'set_minimum_wage',
             'set_doctor_commission',
+            ///////////////////////////ADMIN////////////////////////////////////////////
+            'create_doctors',
+            'update_doctors',
+            'delete_doctors',
+            'view_doctors',
+
+
         ];
 
         foreach ($permissions as $permission) {
@@ -27,5 +35,8 @@ class PermissionSeeder extends Seeder
                 'guard_name' => 'api',
             ]);
         }
+
+
+
     }
 }

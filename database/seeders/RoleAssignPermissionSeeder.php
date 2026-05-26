@@ -38,5 +38,14 @@ class RoleAssignPermissionSeeder extends Seeder
             ]
         );
         $superAdmin->assignRole('super_admin');
+        $Admin = Role::where('name', 'admin')->first();
+       if ($Admin) {
+           $Admin->givePermissionTo([
+               'create_doctors',
+               'update_doctors',
+               'view_doctors',
+               'delete_doctors',
+           ]);
+       }
     }
 }
