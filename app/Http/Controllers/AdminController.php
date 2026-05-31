@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserStatus;
 use App\Http\Resources\Auth\RegisterResource;
 use App\Models\DoctorProfile;
 use App\Models\User;
@@ -9,25 +10,46 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    public function doctors(){
-        $doctors=User::role('doctor')->with('doctor')->get();
-        return response()->json(RegisterResource::collection($doctors));
+
+    public function viewDoctors(){
+        $doctors = DoctorProfile::with('user');
+     return response()->json(['doctors' => $doctors->get()]);
     }
-    public function secretaries(){
-        $secretaries=User::role('secretary')->with('secretary')->get();
-        return response()->json(RegisterResource::collection($secretaries));
+    public function viewDoctor(int $id){
+        $doctor = DoctorProfile::with('user')->where('id', $id)->first();
+        return response()->json(['doctor' => $doctor]);
     }
-    public function patients(){
+    public function viewPatients(){
         $patients=User::role('patient')->with('patient')->get();
         return response()->json(RegisterResource::collection($patients));
     }
-    public function doctor($id){
-        $doctor=User::with('doctor')->find($id);
-        return response()->json($doctor);
+
+    public function viewSecretaries(){
+        $secretaries=User::role('secretary')->with('secretary')->get();
+        return response()->json(RegisterResource::collection($secretaries));
     }
-    public function secretary($id){
-        $secretary=User::with('secretary')->find($id);
-        return response()->json($secretary);
-    }
+
+        public function updateDoctor(int $id)
+        {
+            $doctor = DoctorProfile::with('user')->find($id);
+            $doctor->user->status =
+                $doctor->user->status === UserStatus::Active
+                    ? UserStatus::Inactive
+                    : UserStatus::Active;
+            $doctor->user->save();
+            return response()->json([
+                'message' => 'User status updated successfully',
+                'status' => $doctor->user->status->value
+            ]);
+
+        }
+
+
+//    public function delete(int $id)
+//    {
+//        $doctor = DoctorProfile::with('user')->where('id', $id)->first();
+//        $doctor->delete();
+//        return response()->json(['message' => 'user deleted successfully']);
+//    }
 
 }

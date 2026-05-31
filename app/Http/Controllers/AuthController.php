@@ -83,7 +83,7 @@ public function registerDoctor(RegisterDoctorRequest $request){
     $user->assignRole('doctor');
     $user->doctor()->create([
         'profile_image'=>$validated['profile_image']?? null,
-        'section_id'=>$validated['section_id'],
+        //'section_id'=>$validated['section_id'],
         ]);
     $user->load('doctor');//load information from the model of user to bring the information about the patient
     return response()->json([
@@ -148,23 +148,33 @@ return response()->json([
 //    ]);
 }
 
-    public function loginManager(LoginManagersRequest $request){
-        $validated=$request->validated();
-        if (!Auth::attempt($request->only('email','password')))
-        {
+    public function loginManager(LoginManagersRequest $request)
+    {
+        $validated = $request->validated();
+        if (!auth()->attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message'=>'Invalid Credentials'
-            ],401);
+                'message' => 'Invalid Credentials'
+            ], 401);
         }
 
         $user=User::where('email',$validated['email'])->firstOrFail();
         $token=$user->createToken('authToken')->plainTextToken;
+        $user = auth()->user();
+        if (! $user->hasAnyRole(['doctor','admin', 'manager', 'super_admin'])) {
+            return response()->json([
+                'message' => 'You are not authorized to access manager panel'
+            ], 403);
+        }
+
+        $token = $user->createToken('authToken')->plainTextToken;
+
         return response()->json([
-            'message'=>'Login Successful',
-            'token' => $token,
-            'user' => new loginResource($user)
+            'message' => 'Login Successful',
+            'token'   => $token,
+            'user'    => new LoginResource($user)
         ]);
     }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -173,6 +183,5 @@ return response()->json([
             'message' => 'Logout Successful'
         ],200);
     }
-
 }
 

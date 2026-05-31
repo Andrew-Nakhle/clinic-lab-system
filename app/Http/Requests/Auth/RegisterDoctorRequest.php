@@ -23,17 +23,17 @@ class RegisterDoctorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name' => ['required', 'string', 'max:255','min:2'],
-            'last_name' => ['required', 'string', 'max:255','min:2'],
-            'phone'=>['required','string','regex:/^([0-9\s\-\+\(\)]*)$/','unique:users,phone'],
-            'email' => ['required', 'string', 'email','unique:users,email'],
-            'password' => ['required', 'string','confirmed'],
-            'gender'=>['required','string','in:male,female,other'],
-            'profile_image'=>['required','image'],
-            'birth_date'=>['required','date'],
-            'section_id'=>['exists:sections,id','integer'],
-//            'certification'=>['required','image'],
-//            'experience_years'=>['required','integer'],
+                'first_name' => ['required', 'string', 'max:255','min:2'],
+                'last_name' => ['required', 'string', 'max:255','min:2'],
+                'phone'=>['required','string','regex:/^([0-9\s\-\+\(\)]*)$/','unique:users,phone'],
+                'email' => ['required', 'string', 'email','unique:users,email'],
+                'password' => ['required', 'string','confirmed'],
+                'gender'=>['required','string','in:male,female,other'],
+                //'profile_image'=>['required','image'],
+                'birth_date'=>['required','date'],
+                //'section_id'=>['exists:sections,id','integer'],
+    //            'certification'=>['required','image'],
+    //            'experience_years'=>['required','integer'],
 
         ];
     }
