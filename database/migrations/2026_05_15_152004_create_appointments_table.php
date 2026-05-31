@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('made_by');
             $table->dateTime('appointment_date');
             $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled'])->default('pending');
+            $table->decimal('price');
+            $table->string('price');
             $table->timestamps();
         });
     }

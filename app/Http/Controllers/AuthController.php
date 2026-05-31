@@ -32,11 +32,11 @@ public function registerPatient(RegisterPatientRequest $request){
     }
 
     $user=User::create([
-    'first_name'=>$validated['first_name'],
+        'first_name'=>$validated['first_name'],
         'last_name'=>$validated['last_name'],
         'phone'=>$validated['phone'],
         'password'=>$validated['password'],
-//        'role'=>'patient',
+//       'role'=>'patient',
         'gender'=>$validated['gender'],
             'birth_date'=>$validated['birth_date'],
     ]
@@ -71,12 +71,12 @@ public function registerDoctor(RegisterDoctorRequest $request){
 
 
     $user=User::create([
-    'first_name'=>$validated['first_name'],
-    'last_name'=>$validated['last_name'],
-    'email'=>$validated['email'],
-    'phone'=>$validated['phone'],
-    'password'=>$validated['password'],
-    'gender'=>$validated['gender'],
+        'first_name'=>$validated['first_name'],
+        'last_name'=>$validated['last_name'],
+        'email'=>$validated['email'],
+        'phone'=>$validated['phone'],
+        'password'=>$validated['password'],
+        'gender'=>$validated['gender'],
         'birth_date'=>$validated['birth_date'],
 
     ]);
@@ -100,7 +100,7 @@ public function registerSecretary(RegisterSecretaryRequest $request){
         'email'=>$validated['email'],
         'phone'=>$validated['phone'],
         'password'=>$validated['password'],
-//        'role'=>'secretary',
+//      'role'=>'secretary',
         'gender'=>$validated['gender'],
         'birth_date'=>$validated['birth_date'],
     ]);
@@ -156,8 +156,8 @@ return response()->json([
                 'message'=>'Invalid Credentials'
             ],401);
         }
+
         $user=User::where('email',$validated['email'])->firstOrFail();
-        $user['role']=$user->getRoleNames()->first();
         $token=$user->createToken('authToken')->plainTextToken;
         return response()->json([
             'message'=>'Login Successful',

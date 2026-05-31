@@ -18,8 +18,6 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
 
-
-
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $patient  = Role::firstOrCreate(['name' => 'patient']);
         $secretary=Role::firstOrCreate(['name' => 'secretary']);
