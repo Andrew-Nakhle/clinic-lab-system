@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -23,8 +24,8 @@ return new class extends Migration
             $table->date('birth_date');
 
 //            $table->enum('role', ['doctor', 'patient', 'secretary','admin'])->default('patient');
-            $table->enum('status', ['active', 'inactive','delete'])->default('active');
-
+//            $table->enum('status', ['active', 'inactive','delete'])->default('active');
+$table->string('status')->default(UserStatus::Active->value);
             $table->string('otp_code')->nullable();
             $table->dateTime('otp_expires_at')->nullable();
             $table->integer('otp_attempts')->default(0);

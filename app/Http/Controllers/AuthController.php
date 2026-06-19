@@ -32,11 +32,11 @@ public function registerPatient(RegisterPatientRequest $request){
     }
 
     $user=User::create([
-    'first_name'=>$validated['first_name'],
+        'first_name'=>$validated['first_name'],
         'last_name'=>$validated['last_name'],
         'phone'=>$validated['phone'],
         'password'=>$validated['password'],
-//        'role'=>'patient',
+//       'role'=>'patient',
         'gender'=>$validated['gender'],
             'birth_date'=>$validated['birth_date'],
     ]
@@ -71,19 +71,22 @@ public function registerDoctor(RegisterDoctorRequest $request){
 
 
     $user=User::create([
-    'first_name'=>$validated['first_name'],
-    'last_name'=>$validated['last_name'],
-    'email'=>$validated['email'],
-    'phone'=>$validated['phone'],
-    'password'=>$validated['password'],
-    'gender'=>$validated['gender'],
+        'first_name'=>$validated['first_name'],
+        'last_name'=>$validated['last_name'],
+        'email'=>$validated['email'],
+        'phone'=>$validated['phone'],
+        'password'=>$validated['password'],
+        'gender'=>$validated['gender'],
         'birth_date'=>$validated['birth_date'],
 
     ]);
     $user->assignRole('doctor');
     $user->doctor()->create([
-        'profile_image'=>$validated['profile_image']?? null,
-        //'section_id'=>$validated['section_id'],
+        'profile_image'=>$validated['profile_image'],
+        'section_id'=>$validated['section_id'],
+        'certification'=>$validated['certification'],
+        'experience_years'=>$validated['experience_years'],
+
         ]);
     $user->load('doctor');//load information from the model of user to bring the information about the patient
     return response()->json([
@@ -100,7 +103,6 @@ public function registerSecretary(RegisterSecretaryRequest $request){
         'email'=>$validated['email'],
         'phone'=>$validated['phone'],
         'password'=>$validated['password'],
-//        'role'=>'secretary',
         'gender'=>$validated['gender'],
         'birth_date'=>$validated['birth_date'],
     ]);
@@ -156,6 +158,9 @@ return response()->json([
                 'message' => 'Invalid Credentials'
             ], 401);
         }
+
+        $user=User::where('email',$validated['email'])->firstOrFail();
+        $token=$user->createToken('authToken')->plainTextToken;
         $user = auth()->user();
         if (! $user->hasAnyRole(['doctor','admin', 'manager', 'super_admin' , 'secretary'])) {
             return response()->json([
@@ -179,6 +184,11 @@ return response()->json([
         return response()->json([
             'message' => 'Logout Successful'
         ],200);
+    }
+
+    public function profile(){
+    $user = auth()->user();
+    return response()->json(new registerResource($user));
     }
 }
 
