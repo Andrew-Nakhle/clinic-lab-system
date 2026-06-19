@@ -6,12 +6,32 @@ use Illuminate\Database\Eloquent\Model;
 
 class DoctorProfile extends Model
 {
-    protected $table='doctor_profiles';
-    protected $fillable=['user_id','specialization','qualification','experience_years','bio','certification','profile_image'];
-    public function user(){
+    protected $table = 'doctor_profiles';
+
+    protected $fillable = [
+        'user_id',
+        'specialization',
+        'qualification',
+        'experience_years',
+        'bio',
+        'certification',
+        'profile_image',
+        'section_id',
+    ];
+
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
-    public function section(){
+
+    public function section()
+    {
         return $this->belongsTo(Section::class);
     }
+
+    public function patients()
+    {
+        return $this->belongsToMany(PatientProfile::class, 'doctor_patient', 'doctor_id', 'patient_id');
+    }
 }
+

@@ -30,29 +30,30 @@ class RegisterResource extends JsonResource
     private function getProfileData()
     {
 
-        if ($this->hasRole('doctor')){
+        if ($this->hasRole('doctor')) {
             return [
-                'prfile_image'=> url('storage/'.$this->doctor->profile_image),
+                'prfile_image' => url('storage/' . $this->doctor->profile_image),
                 'specialization' => $this->doctor->specialization ?? null,
                 'experience_years' => $this->doctor->experience_years ?? null,
-                'certification' => $this->doctor->certification ? url('storage/'.$this->doctor->certification): null,
+                'certification' => $this->doctor->certification ? url('storage/' . $this->doctor->certification) : null,
                 'bio' => $this->bio ?? null,
             ];
         }
-        if ($this->hasRole('patient')){
+        if ($this->hasRole('patient')) {
             return [
-                'tall'=>$this->patient->tall ,
-                'weight'=>$this->patient->weight ,
-                'blood_group'=>$this->patient->blood_group,
-                'profile_image'=>$this->patient->profile_image ? url('storage/'.$this->patient->profile_image) : null,
-                'id_card'=>$this->patient->id_card ? url('storage/'.$this->patient->id_card) : null,
+                'tall' => $this->patient->tall,
+                'weight' => $this->patient->weight,
+                'blood_group' => $this->patient->blood_group,
+                'profile_image' => $this->patient->profile_image ? url('storage/' . $this->patient->profile_image) : null,
+                'id_card' => $this->patient->id_card ? url('storage/' . $this->patient->id_card) : null,
 
             ];
         }
-        if ($this->hasRole('secretary')){
-            return[
-                'section_id'=>$this->secretary->section_id
-            ];
-        }
+         if ($this->hasRole('secretary')){
+             return[
+                 ''
+             ];
+
+         }
     }
 }

@@ -14,16 +14,16 @@ return new class extends Migration
         Schema::create('doctor_profiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('section_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('profile_image')->nullable();
-            $table->string('specialization')->nullable()    ;
-//            $table->string('qualification');
+            $table->foreignId('section_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('specialization')->nullable();
+            $table->string('qualification')->nullable();
             $table->integer('experience_years')->nullable();
-            $table->string('certification')->nullable();//enter when the doctor want to update his profile
-            $table->text('bio')->nullable();//enter when the doctor want to update his profile
+            $table->text('bio')->nullable();
+            $table->string('certification')->nullable();
+            $table->string('profile_image')->nullable();
             $table->timestamps();
-
         });
+
     }
 
     /**

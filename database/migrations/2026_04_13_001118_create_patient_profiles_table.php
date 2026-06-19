@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('patient_profiles', function (Blueprint $table) {
-
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('section_id')->nullable()->constrained()->nullOnDelete();
             $table->string('profile_image')->nullable();
             $table->string('id_card');
             $table->string('blood_group');
@@ -22,6 +22,7 @@ return new class extends Migration
             $table->smallInteger('weight');
             $table->timestamps();
         });
+
     }
 
     /**

@@ -13,14 +13,19 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            //$table->foreignId('patient_id')->constrained()->onDelete('cascade');
-            //$table->foreignId('doctor_id')->constrained()->onDelete('cascade');
-            //$table->foreignId('secretary_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('made_by');
-            $table->dateTime('appointment_date');
-            $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled'])->default('pending');
+            $table->unsignedBigInteger('doctor_id');
+            $table->unsignedBigInteger('patient_id');
+            $table->unsignedBigInteger('secretary_id')->nullable();
+            $table->date('date');
+            $table->time('time');
+            $table->string('status')->default('pending');
             $table->timestamps();
+
+            $table->foreign('doctor_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('patient_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('secretary_id')->references('id')->on('users')->onDelete('set null');
         });
+
     }
 
     /**

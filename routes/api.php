@@ -9,6 +9,7 @@ use App\Http\Controllers\registerDoORSe;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ReportController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -24,14 +25,14 @@ Route::group(['prefix'=>'auth'],function(){
     Route::post('/register/patient', [AuthController::class, 'registerPatient']);
     //Route::post('/register/doctor', [AuthController::class, 'registerDoctor']);
     //Route::post('/register/secretary', [AuthController::class, 'registerSecretary']);
-    //Route::post('logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
+    Route::post('logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
 
 });
 Route::group(['api'],function(){
     Route::post('verifyOtp',[otpController::class,'verifyLoginOtp']);
     Route::post('resendOtp',[otpController::class,'resendLoginOtp']);
 });
-//superAdmin/////
+/////////////////////////////////////////superAdmin///////////////////////////////////////////////////////////////
 Route::middleware(['auth:sanctum','permission:create_admins|update_admin|view_admins|delete_admin'])->group(function () {
     Route::post('/auth/register/admin', [AuthController::class, 'registerAdmin']);
     Route::patch( '/admin/{id}/status', [SuperAdminController::class, 'update']);
@@ -39,12 +40,47 @@ Route::middleware(['auth:sanctum','permission:create_admins|update_admin|view_ad
     Route::delete('/admin/{id}', [SuperAdminController::class, 'destroy']);
 
 });
-/////ADMIN///////
-Route::middleware(['auth:sanctum','role:admin'])->group(function () {
-Route::post('/auth/register/doctor', [AuthController::class, 'registerDoctor']);
-Route::patch( '/doctor/{id}/status', [AdminController::class, 'updateDoctor']);
-Route::get('/doctors', [AdminController::class, 'viewDoctors']);
-Route::get('/doctor/{id}', [AdminController::class, 'viewDoctor']);
-Route::delete('/doctor/{id}', [AdminController::class, 'delete']);
+//////////////////////////////////////ADMIN/////////////////////////
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+
+    // ---------------------------
+    // Doctors
+    //---------------------------
+    Route::prefix('doctors')->group(function () {
+        Route::post('/register', [AuthController::class, 'registerDoctor']);
+        Route::get('/', [AdminController::class, 'viewDoctors']);
+        Route::get('/{id}', [AdminController::class, 'viewDoctor']);
+        Route::patch('/{id}/status', [AdminController::class, 'updateDoctor']);
+        Route::delete('/{id}', [AdminController::class, 'deleteDoctor']);
+    });
+
+    // ---------------------------
+    // Secretaries
+    // ---------------------------
+    Route::prefix('secretaries')->group(function () {
+        Route::post('/register', [AuthController::class, 'registerSecretary']);
+        Route::get('/', [AdminController::class, 'viewSecretaries']);
+        Route::get('/{id}', [AdminController::class, 'viewSecretary']);
+        Route::patch('/{id}/status', [AdminController::class, 'updateSecretary']);
+        Route::delete('/{id}', [AdminController::class, 'deleteSecretary']);
+    });
+
+
+    // ---------------------------
+    // Patients
+    // ---------------------------
+    Route::prefix('patients')->group(function () {
+        Route::get('/', [AdminController::class, 'viewPatients']);
+        Route::get('/{id}', [AdminController::class, 'viewPatient']);
+        Route::patch('/{id}', [AdminController::class, 'updatePatient']);
+        Route::delete('/{id}', [AdminController::class, 'deletePatient']);
+    });
+
+
 });
+
+
+
+
+
 

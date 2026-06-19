@@ -106,7 +106,7 @@ public function registerSecretary(RegisterSecretaryRequest $request){
     ]);
     $user->assignRole('secretary');
     $user->secretary()->create([
-        'section_id'=>$validated['section_id'],
+      'user_id'=>$user->id,
     ]);
     $user->load('secretary');
     return response()->json([
@@ -157,7 +157,7 @@ return response()->json([
             ], 401);
         }
         $user = auth()->user();
-        if (! $user->hasAnyRole(['doctor','admin', 'manager', 'super_admin'])) {
+        if (! $user->hasAnyRole(['doctor','admin', 'manager', 'super_admin' , 'secretary'])) {
             return response()->json([
                 'message' => 'You are not authorized to access manager panel'
             ], 403);
