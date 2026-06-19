@@ -123,4 +123,11 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    //stripe
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'key' => env('STRIPE_KEY'),
+    ],
+
+
 ];

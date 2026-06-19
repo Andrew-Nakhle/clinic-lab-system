@@ -22,6 +22,7 @@ Route::group(['prefix'=>'auth'],function(){
     Route::post('login',[AuthController::class,'loginUser']);
     Route::post('login/manager',[AuthController::class,'loginManager']);
     Route::post('/register/patient', [AuthController::class, 'registerPatient']);
+    Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth:sanctum');
     //Route::post('/register/doctor', [AuthController::class, 'registerDoctor']);
     //Route::post('/register/secretary', [AuthController::class, 'registerSecretary']);
     //Route::post('logout',[AuthController::class,'logout'])->middleware('auth:sanctum');

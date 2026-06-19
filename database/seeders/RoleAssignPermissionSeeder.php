@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserStatus;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -34,7 +35,7 @@ class RoleAssignPermissionSeeder extends Seeder
                 'password' => bcrypt('password123'),
                 'gender' => 'male',
                 'birth_date' => '1990-01-01',
-                'status' => 'active'
+                'status' =>  UserStatus::Active
             ]
         );
         $superAdmin->assignRole('super_admin');
