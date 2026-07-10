@@ -22,4 +22,9 @@ class PatientProfile extends Model
    {
        return $this->belongsTo(User::class);
    }
+    public function patientAppointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
 }

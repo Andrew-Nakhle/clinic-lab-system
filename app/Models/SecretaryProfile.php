@@ -13,5 +13,10 @@ class SecretaryProfile extends Model
         return $this->belongsTo(User::class);
     }
     public function section(){
-return $this->belongsTo(Section::class);    }
+return $this->belongsTo(Section::class);
+    }
+    public function secretaryAppointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }

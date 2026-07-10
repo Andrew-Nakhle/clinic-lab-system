@@ -21,6 +21,8 @@ return new class extends Migration
             $table->integer('experience_years')->nullable();
             $table->string('certification')->nullable();//enter when the doctor want to update his profile
             $table->text('bio')->nullable();//enter when the doctor want to update his profile
+            $table->decimal('consultation_fee', 8, 2)->nullable();
+            $table->decimal('monthly_salary', 10, 2)->nullable();
             $table->timestamps();
 
         });

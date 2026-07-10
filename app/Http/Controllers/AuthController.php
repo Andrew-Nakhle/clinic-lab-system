@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserStatus;
 use App\Http\Requests\Auth\LoginManagersRequest;
 use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\RegisterAdminRequest;
@@ -81,13 +82,26 @@ public function registerDoctor(RegisterDoctorRequest $request){
 
     ]);
     $user->assignRole('doctor');
-    $user->doctor()->create([
+    $doctor  =  $user->doctor()->create([
         'profile_image'=>$validated['profile_image'],
         'section_id'=>$validated['section_id'],
         'certification'=>$validated['certification'],
         'experience_years'=>$validated['experience_years'],
 
         ]);
+    foreach ($validated['schedules'] as $schedule) {
+
+        $doctor->schedules()->create([
+
+            'day_of_week' => $schedule['day_of_week'],
+
+            'start_time' => $schedule['start_time'],
+
+            'end_time' => $schedule['end_time'],
+
+        ]);
+
+    }
     $user->load('doctor');//load information from the model of user to bring the information about the patient
     return response()->json([
     'message'=>'Doctor Registered Successfully',
@@ -127,44 +141,86 @@ return response()->json([
     'user'=>new registerResource($user)
 ]);
 }
-public function loginUser(LoginUserRequest $request){
-$validated=$request->validated();
-if (!Auth::attempt($request->only('phone','password')))
-  {
-    return response()->json([
-        'message'=>'Invalid Credentials'
-    ],401);
-}
-$user=User::where('phone',$validated['phone'])->firstOrFail();
-    $user->generateOtpCode();
-$otp=$user->otp_code;
-    app(\App\Services\UltraMsgService::class)->sendOtp($user->phone, $otp);
-return response()->json([
-'message'=>'please check your whatsapp number',
-]);
-//$token=$user->createToken('authToken')->plainTextToken;
-//    return response()->json([
-//        'message'=>'Login Successful',
-//        'token' => $token,
-//        'user' => $user
-//    ]);
-}
-
-    public function loginManager(LoginManagersRequest $request)
+    public function loginUser(LoginUserRequest $request)
     {
         $validated = $request->validated();
-        if (!auth()->attempt($request->only('email', 'password'))) {
+
+        $user = User::where('phone', $validated['phone'])->first();
+
+        if (!$user) {
             return response()->json([
                 'message' => 'Invalid Credentials'
             ], 401);
         }
 
-        $user=User::where('email',$validated['email'])->firstOrFail();
-        $token=$user->createToken('authToken')->plainTextToken;
-        $user = auth()->user();
-        if (! $user->hasAnyRole(['doctor','admin', 'manager', 'super_admin'])) {
+        if ($user->status === UserStatus::Inactive) {
             return response()->json([
-                'message' => 'You are not authorized to access manager panel'
+                'message' => 'Your account is inactive. Please contact the administrator.'
+            ], 403);
+        }
+
+//        if ($user->status === UserStatus::deleted) {
+//            return response()->json([
+//                'message' => 'Your account has been deleted.'
+//            ], 403);
+//        }
+
+        if (!Auth::attempt([
+            'phone' => $validated['phone'],
+            'password' => $validated['password'],
+        ])) {
+            return response()->json([
+                'message' => 'Invalid Credentials'
+            ], 401);
+        }
+
+        $user->generateOtpCode();
+
+        app(\App\Services\UltraMsgService::class)
+            ->sendOtp($user->phone, $user->otp_code);
+
+        return response()->json([
+            'message' => 'Please check your WhatsApp number.',
+        ]);
+    }
+
+    public function loginManager(LoginManagersRequest $request)
+    {
+        $validated = $request->validated();
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Invalid Credentials'
+            ], 401);
+        }
+
+//        if ($user->status === UserStatus::Inactive) {
+//            return response()->json([
+//                'message' => 'Your account is inactive.'
+//            ], 403);
+//        }
+
+        if ($user->status === UserStatus::deleted) {
+            return response()->json([
+                'message' => 'Your account has been deleted.'
+            ], 403);
+        }
+
+        if (!Auth::attempt([
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+        ])) {
+            return response()->json([
+                'message' => 'Invalid Credentials'
+            ], 401);
+        }
+
+
+        if (!$user->hasAnyRole(['doctor', 'admin', 'secretary', 'super_admin'])) {
+            return response()->json([
+                'message' => 'You are not authorized to access this panel.'
             ], 403);
         }
 
@@ -172,8 +228,8 @@ return response()->json([
 
         return response()->json([
             'message' => 'Login Successful',
-            'token'   => $token,
-            'user'    => new LoginResource($user)
+            'token' => $token,
+            'user' => new LoginResource($user)
         ]);
     }
 

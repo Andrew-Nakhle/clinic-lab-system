@@ -32,11 +32,12 @@ class RegisterResource extends JsonResource
 
         if ($this->hasRole('doctor')){
             return [
-                'profile_image'=>$this->profile_image ? url('storage/'.$this->doctor->profile_image) :null,
+                        'profile_image'=>$this->doctor->profile_image ? url('storage/'.$this->doctor->profile_image) :null,
                 'specialization' => $this->doctor->specialization ?? null,
                 'experience_years' => $this->doctor->experience_years ?? null,
                 'certification' => $this->doctor->certification ? url('storage/'.$this->doctor->certification): null,
-                'bio' => $this->bio ?? null,
+                'bio' => $this->doctor->bio ?? null,
+                'section_id' => $this->doctor->section_id ?? null,
             ];
         }
         if ($this->hasRole('patient')){

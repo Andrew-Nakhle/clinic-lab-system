@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Enums\Doctor\DayOfWeek;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class RegisterDoctorRequest extends FormRequest
 {
@@ -23,6 +25,22 @@ class RegisterDoctorRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'schedules' => ['required', 'array', 'min:1'],
+
+            'schedules.*.day_of_week' => [
+                'required',
+                Rule::enum(DayOfWeek::class),
+            ],
+
+            'schedules.*.start_time' => [
+                'required',
+                'date_format:H:i'
+            ],
+
+            'schedules.*.end_time' => [
+                'required',
+                'date_format:H:i',
+            ],
                 'first_name' => ['required', 'string', 'max:255','min:2'],
                 'last_name' => ['required', 'string', 'max:255','min:2'],
                 'phone'=>['required','string','regex:/^([0-9\s\-\+\(\)]*)$/','unique:users,phone'],
@@ -31,7 +49,7 @@ class RegisterDoctorRequest extends FormRequest
                 'gender'=>['required','string','in:male,female,other'],
                 'profile_image'=>['required','image'],
                 'birth_date'=>['required','date'],
-                'section_id'=>['exists:sections,id','integer'],
+                'section_id'=>['required','exists:sections,id','integer'],
                 'certification'=>['required','image'],
                 'experience_years'=>['required','integer'],
 
