@@ -27,12 +27,12 @@ class RoleAssignPermissionSeeder extends Seeder
             ]);
         }
         $superAdmin = User::firstOrCreate(
-            ['email' => 'super@admin.com'],
+            ['email' => 'super@gmail.com'],
             [
                 'first_name' => 'Super',
                 'last_name' => 'Admin',
                 'phone' => '0000000000',
-                'password' => bcrypt('password123'),
+                'password' => bcrypt('test123'),
                 'gender' => 'male',
                 'birth_date' => '1990-01-01',
                 'status' =>  UserStatus::Active
@@ -48,5 +48,26 @@ class RoleAssignPermissionSeeder extends Seeder
                'delete_doctors',
            ]);
        }
+       $Doctor=Role::where('name', 'doctor')->first();
+       if ($Doctor) {
+           $Doctor->givePermissionTo([
+               'update_doctor_profile',
+               'view_doctor_profile']);
+       }
+
+       $Patient=Role::where('name', 'patient')->first();
+       if ($Patient) {
+           $Patient->givePermissionTo([
+               'create_appointment_by_patient',
+               'availableSlots'
+           ]);
+       }
+        $Secretary=Role::where('name', 'secretary')->first();
+        if ($Secretary) {
+            $Secretary->givePermissionTo([
+                'search_patient',
+                'create_appointment_by_secretary',
+            ]);
+        }
     }
 }

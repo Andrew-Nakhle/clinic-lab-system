@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
-use App\Enums\PaymentProvider;
-use App\Enums\PaymentStatus;
+use App\Enums\Payment\PaymentProvider;
+use App\Enums\Payment\PaymentStatus;
 use Illuminate\Database\Eloquent\Model;
-use Stripe\Refund;
-use Stripe\Stripe;
+
 class Payment extends Model
 {
     protected $fillable = [

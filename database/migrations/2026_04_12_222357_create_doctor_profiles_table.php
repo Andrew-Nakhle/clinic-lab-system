@@ -18,9 +18,16 @@ return new class extends Migration
             $table->string('specialization')->nullable();
             $table->string('qualification')->nullable();
             $table->integer('experience_years')->nullable();
+<<<<<<< HEAD
             $table->text('bio')->nullable();
             $table->string('certification')->nullable();
             $table->string('profile_image')->nullable();
+=======
+            $table->string('certification')->nullable();//enter when the doctor want to update his profile
+            $table->text('bio')->nullable();//enter when the doctor want to update his profile
+            $table->decimal('consultation_fee', 8, 2)->nullable();
+            $table->decimal('monthly_salary', 10, 2)->nullable();
+>>>>>>> 347058423acfaa612372eae2f94fca8a80374f55
             $table->timestamps();
         });
 

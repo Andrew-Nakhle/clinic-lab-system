@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
 <<<<<<< HEAD
+<<<<<<< HEAD
             $table->unsignedBigInteger('doctor_id');
             $table->unsignedBigInteger('patient_id');
             $table->unsignedBigInteger('secretary_id')->nullable();
@@ -30,6 +31,18 @@ return new class extends Migration
             $table->decimal('price');
             $table->string('price');
 >>>>>>> cbf2b73a062e6a4a087972bd7a80a9052966c2dd
+=======
+            $table->foreignId('patient_id')->constrained('patient_profiles')->onDelete('cascade');
+            $table->foreignId('doctor_id')->constrained('doctor_profiles')->onDelete('cascade');
+            $table->foreignId('secretary_id')->nullable()->constrained('secretary_profiles')->onDelete('set null');
+
+            $table->string('made_by');
+            $table->dateTime('start_at');
+            $table->dateTime('end_at');
+            $table->string('status')->default('booked');
+            $table->decimal('price',8,2);
+
+>>>>>>> 347058423acfaa612372eae2f94fca8a80374f55
             $table->timestamps();
 
             $table->foreign('doctor_id')->references('id')->on('users')->onDelete('cascade');

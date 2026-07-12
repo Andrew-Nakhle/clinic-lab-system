@@ -22,8 +22,6 @@ class UpdateProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        function rules(): array
-        {
             return [
                 'first_name' => ['sometimes', 'string', 'min:2', 'max:255'],
                 'last_name' => ['sometimes', 'string', 'min:2', 'max:255'],
@@ -35,11 +33,12 @@ class UpdateProfileRequest extends FormRequest
                 'section_id' => ['sometimes', 'integer', 'exists:sections,id'],
                 'certification' => ['sometimes', 'image'],
                 'experience_years' => ['sometimes', 'integer'],
-                'current_password' => ['required_with:password', 'current_password'],
-                'password' => ['sometimes', 'confirmed', 'min:8'],
-                'bio' => ['sometimes', 'text'],
-            ];
-        }
+//                'current_password' => ['required_with:password', 'current_password'],
+//                'password' => ['sometimes', 'confirmed', 'min:8'],
+                'bio' => ['sometimes', 'string'],
+                'specialization'=>['sometimes', 'string'],
+                      ];
+
     }
 }
 

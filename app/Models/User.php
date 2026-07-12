@@ -56,20 +56,20 @@ class User extends Authenticatable
      {
          return $this->hasOne(PatientProfile::class);
      }
-    public function doctorAppointments()
-    {
-        return $this->hasMany(Appointment::class);
-    }
+//    public function doctorAppointments()
+//    {
+//        return $this->hasMany(Appointment::class);
+//    }
 
-    public function patientAppointments()
-    {
-        return $this->hasMany(Appointment::class);
-    }
+//    public function patientAppointments()
+//    {
+//        return $this->hasMany(Appointment::class);
+//    }
 
-    public function secretaryAppointments()
-    {
-        return $this->hasMany(Appointment::class);
-    }
+//    public function secretaryAppointments()
+//    {
+//        return $this->hasMany(Appointment::class);
+//    }
     public function payments()
     {
 return $this->hasMany(Payment::class);
