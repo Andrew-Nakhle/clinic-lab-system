@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Appointment\AppointmentStatus;
+use App\Http\Requests\Appointment\GetAppointmentsRequest;
+use App\Http\Requests\Doctor\GetMedicalRecordRequest;
 use App\Http\Requests\Doctor\UpdateProfileRequest;
 use App\Http\Resources\Appointment\AppointmentResource;
 use App\Models\Appointment;
+use App\Models\PatientProfile;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -50,27 +54,12 @@ if($request->hasFile('profile_image')){
             'specialization'=>$validated['specialization'] ?? $user->doctor->specialization
 ]);
 
-///////////////
-//        if(isset($validated['password']))
-//        {
-//            if (!Hash::check($request->current_password, $user->password))
-//            {
-//                return response()->json([
-//                    'message' => 'Current password is incorrect'
-//                ], 422);
-//            }
-//
-//            $user->update([
-//                'password' => Hash::make($validated['password'])
-//            ]);
-//        }
 
-        //////////////////
         return response()->json([
             'message' => 'Profile updated successfully'
         ]);
     }
-//    public function  viewAppointments(){
+//    public function  viewHomeVisitAppointments(Request $request){
 //    $user = auth()->user();
 //    $appoitments=$user->doctor->doctorAppointments;
 //    return response()->json([
@@ -78,32 +67,47 @@ if($request->hasFile('profile_image')){
 //    ]);
 //    }
 
-    public function todayAppointments()
+    public function todayAppointments(GetAppointmentsRequest $request)
     {
-        $appointments = Appointment::with('patient.user')->
-       where ('doctor_id', auth()->user()->doctor->id)
+        $query = Appointment::query();
+        $query-> with('patient.user')->
+       where ('doctor_id', auth()->user()->doctor->id);
+            if($request->input('appointment_type')){
+                $query->where('appointment_type',$request->input('appointment_type'));
+            }
+         $appointments=   $query
             ->whereDate('start_at', today())
             ->orderBy('start_at')
              ->get();
 
-        return response()->json([ AppointmentResource::collection($appointments)]);
+        return response()->json(['appointments' => AppointmentResource::collection($appointments)]);
     }
 
-    public function upcomingAppointments()
+    public function upcomingAppointments(GetAppointmentsRequest $request)
     {
-        $appointments = Appointment::with('patient.user')->
-        where('doctor_id', auth()->user()->doctor->id)
+        $query = Appointment::query();
+        $query->with('patient.user')->
+        where('doctor_id', auth()->user()->doctor->id);
+                if($request->input('appointment_type')){
+                    $query->where('appointment_type',$request->input('appointment_type'));
+                }
+                $appointments=   $query
             ->where('status', AppointmentStatus::Booked->value)
             ->where('start_at', '>', now())
             ->orderBy('start_at')
             ->get();
 
-        return response()->json([ AppointmentResource::collection($appointments)]);
+        return response()->json(['appointments' => AppointmentResource::collection($appointments)]);
     }
-    public function previousAppointments()
+    public function previousAppointments(getAppointmentsRequest $request)
     {
-        $appointments =  Appointment::with('patient.user')->
-        where('doctor_id', auth()->user()->doctor->id)
+        $query = Appointment::query();
+        $query -> with('patient.user')->
+        where('doctor_id', auth()->user()->doctor->id);
+        if($request->input('appointment_type')){
+            $query->where('appointment_type',$request->input('appointment_type'));
+        }
+        $appointments=   $query
             ->where('start_at', '<', now())
             ->whereIn('status', [
                 AppointmentStatus::Completed->value,
@@ -111,7 +115,28 @@ if($request->hasFile('profile_image')){
             ])
             ->orderByDesc('start_at')
             ->get();
+        return response()->json(['appointments' => AppointmentResource::collection($appointments)]);
+    }
+    public function getMedicalRecord(GetMedicalRecordRequest $request){
+      $validated = $request->validated();
+   $patient = PatientProfile::with('user')->findOrFail($validated['patient_id']);
+      if($validated['medical_record_access_code']!=$patient->medical_record_access_code){
+          return response()->json(['message'=>'incorrect code'],401);
+      }
+      $reports=$patient->reports()->with('doctor.user','appointment')->latest()->get();
+        if ($reports->isEmpty()) {
+            return response()->json([
+                'message' => 'No reports found'
+            ], 404);
+        }
 
-        return AppointmentResource::collection($appointments);
+        $pdf = Pdf::loadView(
+            'pdf.medical_record',
+            [
+                'patient'=>$patient,
+                'reports'=>$reports
+            ]
+        );//هي عبارة عن تابع لاستدعاء الواجهة بتاخد بارايمترز اول واحد الواجهة والتاني مصفوفة من القيم يلي رح يمررون بالواجهة
+        return $pdf->download('medical_record.pdf');
     }
 }

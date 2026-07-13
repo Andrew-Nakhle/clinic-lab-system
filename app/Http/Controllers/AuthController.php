@@ -11,6 +11,7 @@ use App\Http\Requests\Auth\RegisterPatientRequest;
 use App\Http\Requests\Auth\RegisterSecretaryRequest;
 use App\Http\Resources\Auth\LoginResource;
 use App\Http\Resources\Auth\RegisterResource;
+use App\Models\PatientProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,12 +45,14 @@ public function registerPatient(RegisterPatientRequest $request){
 
     );
     $user->assignRole('patient');
+
     $user->patient()->create([
     'blood_group'=>$validated['blood_group'],
     'weight'=>$validated['weight'],
     'tall'=>$validated['tall'],
         'id_card'=>$validated['id_card'],
         'profile_image'=>$validated['profile_image']??null,
+        'medical_record_access_code'=>PatientProfile::generateMedicalAccessCode(),
 
         ]);
 
@@ -92,12 +95,14 @@ public function registerDoctor(RegisterDoctorRequest $request){
     foreach ($validated['schedules'] as $schedule) {
 
         $doctor->schedules()->create([
+            'schedule_type' => $schedule['schedule_type'],
 
             'day_of_week' => $schedule['day_of_week'],
 
             'start_time' => $schedule['start_time'],
 
             'end_time' => $schedule['end_time'],
+
 
         ]);
 

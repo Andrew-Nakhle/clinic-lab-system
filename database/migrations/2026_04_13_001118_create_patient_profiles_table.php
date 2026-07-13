@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('blood_group');
             $table->integer('tall');
             $table->smallInteger('weight');
+            $table->string('medical_record_access_code')->unique();
             $table->timestamps();
         });
     }

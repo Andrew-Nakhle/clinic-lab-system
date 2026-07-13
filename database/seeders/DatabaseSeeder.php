@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RoleAssignPermissionSeeder::class,
             SectionSeeder::class,
+            AreaSeeder::class,
             ]);
 
     }

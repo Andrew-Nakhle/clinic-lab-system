@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
 use App\Http\Resources\Auth\RegisterResource;
+use App\Models\Area;
 use App\Models\DoctorProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -43,6 +44,10 @@ class AdminController extends Controller
             ]);
 
         }
+    public function  GetAreas()
+    {
+        return response()->json(Area::all());
+    }
 
 
 //    public function delete(int $id)

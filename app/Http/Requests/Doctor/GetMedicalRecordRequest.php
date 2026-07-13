@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Appointment;
+namespace App\Http\Requests\Doctor;
 
-use App\Enums\Appointment\AppointmentType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class BookAppointmentRequest extends FormRequest
+class GetMedicalRecordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,11 +23,8 @@ class BookAppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'doctor_id' => ['required', 'integer', 'exists:doctor_profiles,id'],
-
-            'start_at' => ['required', 'date', 'after:now'],
-
-            'appointment_type' => ['required', Rule::enum(AppointmentType::class),],
+            'patient_id' => ['required','exists:patient_profiles,id'],
+            'medical_record_access_code'=>['required','string'],
 
         ];
     }

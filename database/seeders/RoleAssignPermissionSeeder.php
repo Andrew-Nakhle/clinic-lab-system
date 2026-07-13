@@ -46,13 +46,14 @@ class RoleAssignPermissionSeeder extends Seeder
                'update_doctors',
                'view_doctors',
                'delete_doctors',
+               'get_areas'
            ]);
        }
        $Doctor=Role::where('name', 'doctor')->first();
        if ($Doctor) {
            $Doctor->givePermissionTo([
                'update_doctor_profile',
-               'view_doctor_profile']);
+               'view_doctor_profile','get_medical_record']);
        }
 
        $Patient=Role::where('name', 'patient')->first();

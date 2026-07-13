@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Auth;
 
+use App\Models\PatientProfile;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -47,6 +48,7 @@ class RegisterResource extends JsonResource
                 'blood_group'=>$this->patient->blood_group,
                 'profile_image'=>$this->patient->profile_image ? url('storage/'.$this->patient->profile_image) : null,
                 'id_card'=>$this->patient->id_card ? url('storage/'.$this->patient->id_card) : null,
+                'medical_record_access_code' => PatientProfile::generateMedicalAccessCode(),
 
             ];
         }

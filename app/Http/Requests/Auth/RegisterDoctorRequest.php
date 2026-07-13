@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Enums\Doctor\DayOfWeek;
+use App\Enums\Schedule\ScheduleType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,6 +28,7 @@ class RegisterDoctorRequest extends FormRequest
         return [
             'schedules' => ['required', 'array', 'min:1'],
 
+
             'schedules.*.day_of_week' => [
                 'required',
                 Rule::enum(DayOfWeek::class),
@@ -34,13 +36,21 @@ class RegisterDoctorRequest extends FormRequest
 
             'schedules.*.start_time' => [
                 'required',
-                'date_format:H:i'
+                'date_format:H:i',
             ],
 
             'schedules.*.end_time' => [
                 'required',
                 'date_format:H:i',
+                'after:schedules.*.start_time'
             ],
+            'schedules.*.schedule_type'=>[
+                'required',
+                Rule::enum(ScheduleType::class)
+            ],
+
+            'service_areas'=>['nullable', 'array'],
+            'service_areas.*'=>['exists:areas,id'],
                 'first_name' => ['required', 'string', 'max:255','min:2'],
                 'last_name' => ['required', 'string', 'max:255','min:2'],
                 'phone'=>['required','string','regex:/^([0-9\s\-\+\(\)]*)$/','unique:users,phone'],

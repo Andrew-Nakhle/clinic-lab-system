@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Appointment;
 
+use App\Enums\Appointment\AppointmentType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class AvailableSlotsRequest extends FormRequest
 {
@@ -23,17 +25,12 @@ class AvailableSlotsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'doctor_id' => [
-                'required',
-                'integer',
-                'exists:doctor_profiles,id',
-            ],
+            'doctor_id' => ['required', 'integer', 'exists:doctor_profiles,id',],
 
-            'date' => [
-                'required',
-                'date',
-                'after_or_equal:today',
-            ],
+            'date' => ['required', 'date', 'after_or_equal:today',],
+
+
+            'appointment_type' => ['required', Rule::enum(AppointmentType::class),],
         ];
     }
 }

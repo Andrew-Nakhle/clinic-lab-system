@@ -4,6 +4,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SecretaryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,7 @@ Route::patch( '/doctor/{id}/status', [AdminController::class, 'updateDoctor']);
 Route::get('/doctors', [AdminController::class, 'viewDoctors']);
 Route::get('/doctor/{id}', [AdminController::class, 'viewDoctor']);
 Route::delete('/doctor/{id}', [AdminController::class, 'delete']);
+Route::get('/areas', [AdminController::class, 'viewAreas']);
 });
 ///////DOCTOR//////
 Route::middleware(['auth:sanctum','role:doctor','active'])->group(function () {
@@ -59,6 +61,9 @@ Route::put('/profile',[DoctorController::class,'updateProfile']);
 Route::get('/viewAppointments/today', [DoctorController::class, 'todayAppointments']);
     Route::get('/viewAppointments/previous', [DoctorController::class, 'previousAppointments']);
     Route::get('/viewAppointments/upcoming', [DoctorController::class, 'upcomingAppointments']);
+
+    Route::get('/medicalRecord', [DoctorController::class, 'getMedicalRecord']);
+
 
 });
 ////// PATIENT //////

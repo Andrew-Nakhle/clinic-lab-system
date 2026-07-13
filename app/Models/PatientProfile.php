@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PatientProfile extends Model
 {
@@ -17,14 +18,28 @@ class PatientProfile extends Model
        'id_card',
        'profile_image',
        'section_id',
+       'medical_record_access_code'
    ];
+   public static function generateMedicalAccessCode(){
+
+           do{
+       $code=Str::upper(Str::random(6));
+           }
+           while(self::where('medical_record_access_code',$code)->exists());
+
+       return $code;
+
+   }
    public function user()
    {
        return $this->belongsTo(User::class);
    }
-    public function patientAppointments()
+    public function appointments()
     {
         return $this->hasMany(Appointment::class);
+    }
+    public function reports(){
+       return $this->hasMany(Report::class,'patient_id');
     }
 
 }
