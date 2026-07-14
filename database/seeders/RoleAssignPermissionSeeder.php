@@ -12,8 +12,7 @@ class RoleAssignPermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // جلب أول قسم متاح في قاعدة البيانات لتفادي أخطاء العلاقات (Foreign Key)
-        // إذا لم يكن هناك أي قسم، سيضع null لتجنب توقف السيرفر
+        // جلب أول قسم متاح في قاعدة البيانات لتفادي أخطاء العلاقات
         $defaultSectionId = Section::first()?->id ?? null;
 
         /*
@@ -47,14 +46,11 @@ class RoleAssignPermissionSeeder extends Seeder
                 'birth_date' => '1990-01-01',
                 'status'     => UserStatus::Active ?? 'active'
             ]
-        );
-        $superAdminUser->assignRole('super_admin');
+        ); // تم إضافة الفاصلة المنقوطة هنا
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. إعداد صلاحيات الـ Admin وإنشاء حسابه
-        |--------------------------------------------------------------------------
-        */
+        $superAdminUser->assignRole('super_admin'); // تم تصحيح اسم المتغير
+
+        // صلاحيات الأدمن والمسؤولين
         $adminRole = Role::where('name', 'admin')->first();
         if ($adminRole) {
             $adminRole->givePermissionTo([
@@ -62,9 +58,24 @@ class RoleAssignPermissionSeeder extends Seeder
                 'update_doctors',
                 'view_doctors',
                 'delete_doctors',
+                'get_areas'
             ]);
         }
 
+        $doctorRole = Role::where('name', 'doctor')->first();
+        if ($doctorRole) {
+            $doctorRole->givePermissionTo([
+                'update_doctor_profile',
+                'view_doctor_profile',
+                'get_medical_record'
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. إنشاء حساب Admin تجريبي
+        |--------------------------------------------------------------------------
+        */
         $adminUser = User::firstOrCreate(
             ['email' => 'adm@example.com'],
             [
@@ -97,7 +108,6 @@ class RoleAssignPermissionSeeder extends Seeder
 
         $patientUser->assignRole('patient');
 
-        // التحقق منعاً للتكرار إذا كان البروفايل منشأ مسبقاً
         if (!$patientUser->patient()->exists()) {
             $patientUser->patient()->create([
                 'blood_group'   => 'O+',
@@ -105,7 +115,7 @@ class RoleAssignPermissionSeeder extends Seeder
                 'tall'          => '178',
                 'id_card'       => 'id_cards/default_seeder_card.png',
                 'profile_image' => 'profile_images/default_seeder_avatar.png',
-                'section_id'    => $defaultSectionId, // تم التعديل لديناميكي آمن
+                'section_id'    => $defaultSectionId,
             ]);
         }
 
@@ -131,7 +141,7 @@ class RoleAssignPermissionSeeder extends Seeder
         if (!$labUser->laboratory()->exists()) {
             $labUser->laboratory()->create([
                 'license_number' => 'LAB-2026-XYZ99',
-                'section_id'     => 6, // تم التعديل لديناميكي آمن
+                'section_id'     => $defaultSectionId,
             ]);
         }
 
@@ -158,11 +168,11 @@ class RoleAssignPermissionSeeder extends Seeder
             $doctorUser->doctor()->create([
                 'profile_image'    => 'profile_images/default_doctor_avatar.png',
                 'certification'    => 'certifications/default_certificate.png',
-                'section_id'       => 7, // تم التعديل لديناميكي آمن
+                'section_id'       => $defaultSectionId,
                 'experience_years' => 10,
-                'bio'              => 'استشاري جراحة عامة وخبرة طويلة في المستشفيات التعليمية.',
-                'qualification'    => 'البورد العربي في الجراحة العامة',
-                'specialization'   => 'جراحة عامة مناظير',
+                'bio'              => 'استشاري جراحة عامة.',
+                'qualification'    => 'البورد العربي',
+                'specialization'   => 'جراحة عامة',
             ]);
         }
     }

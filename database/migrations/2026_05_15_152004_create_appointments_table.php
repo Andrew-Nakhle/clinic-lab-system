@@ -18,6 +18,9 @@ return new class extends Migration
             $table->foreignId('doctor_id')->constrained('doctor_profiles')->onDelete('cascade');
             $table->foreignId('patient_id')->constrained('patient_profiles')->onDelete('cascade');
             $table->foreignId('secretary_id')->nullable()->constrained('secretary_profiles')->onDelete('set null');
+            $table->foreignId('area_id')->nullable()->constrained('areas')->onDelete('set null');
+            $table->string('appointment_type');
+            $table->text('address')->nullable();
 
             // تفاصيل المحاضر والوقت والتاريخ المدمجة
             $table->string('made_by');

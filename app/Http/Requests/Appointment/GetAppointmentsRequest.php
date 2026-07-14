@@ -7,14 +7,14 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class BookAppointmentBySecretaryRequest extends FormRequest
+class GetAppointmentsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true ;
+        return true;
     }
 
     /**
@@ -25,10 +25,7 @@ class BookAppointmentBySecretaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'patient_id'=>['required','exists:patient_profiles,id','integer'],
-            'start_at'=>['required','date','after:now'],
-            'doctor_id'=>['required','exists:doctor_profiles,id'],
-            'appointment_type' => ['required', Rule::enum(AppointmentType::class),],
+            'appointment_type' => ['nullable',Rule::enum(AppointmentType::class),],
         ];
     }
 }

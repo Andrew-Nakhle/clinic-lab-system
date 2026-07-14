@@ -28,6 +28,7 @@ return new class extends Migration
 
             // الأعمدة المالية المضافة من كود زميلك
             $table->decimal('consultation_fee', 8, 2)->nullable();
+            $table->decimal('home_visit_fee', 8, 2)->nullable();
             $table->decimal('monthly_salary', 10, 2)->nullable();
 
             $table->timestamps();

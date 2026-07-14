@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Doctor\DayOfWeek;
+use App\Enums\Schedule\ScheduleType;
 use Illuminate\Database\Eloquent\Model;
 
 class DoctorSchedule extends Model
@@ -15,14 +16,15 @@ class DoctorSchedule extends Model
     ];
     protected $casts = [
         'day_of_week' => DayOfWeek::class,
+        'schedule_type'=>ScheduleType::class,
 
     ];
     public function doctor()
     {
         return $this->belongsTo(DoctorProfile::class, 'doctor_id');
     }
-    public function appointments()
-    {
-        return $this->hasMany(Appointment::class, 'doctor_schedule_id');
-    }
+//    public function appointments()
+//    {
+//        return $this->hasMany(Appointment::class, 'doctor_schedule_id');
+//    }
 }

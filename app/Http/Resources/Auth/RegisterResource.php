@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Auth;
 
+use App\Models\PatientProfile;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,7 @@ class RegisterResource extends JsonResource
             'id'         => $this->id,
             'first_name' => $this->first_name,
             'last_name'  => $this->last_name,
-            'full_name'  => $this->first_name . ' ' . $this->last_name, // مريح للـ Frontend
+            'full_name'  => $this->first_name . ' ' . $this->last_name,
             'phone'      => $this->phone,
             'email'      => $this->email,
             'gender'     => $this->gender,
@@ -44,20 +45,21 @@ class RegisterResource extends JsonResource
         // 2. بروفايل المريض
         if ($this->hasRole('patient') && $this->patient) {
             return [
-                'type'          => 'patient',
-                'tall'          => $this->patient->tall,
-                'weight'        => $this->patient->weight,
-                'blood_group'   => $this->patient->blood_group,
-                'profile_image' => $getImageUrl($this->patient->profile_image),
-                'id_card'       => $getImageUrl($this->patient->id_card),
+                'type'                       => 'patient',
+                'tall'                       => $this->patient->tall,
+                'weight'                     => $this->patient->weight,
+                'blood_group'                => $this->patient->blood_group,
+                'profile_image'              => $getImageUrl($this->patient->profile_image),
+                'id_card'                    => $getImageUrl($this->patient->id_card),
+                'medical_record_access_code' => $this->patient->medical_record_access_code,
             ];
         }
 
         // 3. بروفايل السكرتير
         if ($this->hasRole('secretary') && $this->secretary) {
             return [
-                'type'             => 'secretary',
-                'image'    => $this->getImageUrl($this->secretary->image),
+                'type'  => 'secretary',
+                'image' => $getImageUrl($this->secretary->image),
             ];
         }
 

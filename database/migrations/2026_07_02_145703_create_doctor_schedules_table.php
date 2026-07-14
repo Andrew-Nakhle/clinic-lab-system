@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('doctor_id')
                 ->constrained('doctor_profiles')
                 ->cascadeOnDelete();
-
+$table->string('schedule_type')->default('clinic');
             $table->string('day_of_week');
             $table->time('start_time');
 

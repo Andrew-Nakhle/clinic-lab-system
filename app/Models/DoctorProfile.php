@@ -24,7 +24,7 @@ class DoctorProfile extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id'); // تأكد من تحديد المفتاح الأجنبي
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
@@ -57,5 +57,13 @@ class DoctorProfile extends Model
     public function schedules()
     {
         return $this->hasMany(DoctorSchedule::class, 'doctor_id');
+    }
+    public function serviceAreas()
+    {
+        return $this->hasMany(DoctorServiceArea::class, 'doctor_id');
+    }
+    public function reports()
+    {
+        return $this->hasMany(Report::class, 'doctor_id');
     }
 }

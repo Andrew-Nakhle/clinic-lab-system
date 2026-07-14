@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PatientProfile extends Model
 {
@@ -26,14 +27,16 @@ class PatientProfile extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 
-    /**
-     * علاقة البروفايل بمواعيد المريض (تم دمجها من كود زميلك)
-     */
-    public function patientAppointments()
+    public static function generateMedicalAccessCode()
     {
-        return $this->hasMany(Appointment::class, 'patient_id');
+        return strtoupper(Str::random(8));
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
     }
 }

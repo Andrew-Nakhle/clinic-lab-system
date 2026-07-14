@@ -31,6 +31,8 @@ class DatabaseSeeder extends Seeder
             MedicalTestSeeder::class,
             PermissionSeeder::class,
             RoleAssignPermissionSeeder::class,
+            SectionSeeder::class,
+            AreaSeeder::class,
             ]);
 
     }

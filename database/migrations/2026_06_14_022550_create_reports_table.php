@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->nullable()->constrained('patient_profiles')->onDelete('set null');
             $table->foreignId('doctor_id')->nullable()->constrained('doctor_profiles')->onDelete('set null');
-            $table->foreignId('appointment_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('appointment_id')->nullable()->unique()->constrained()->onDelete('set null');//to know this report belongs to which appointment....
             $table->longText('report');
             $table->timestamps();
         });
