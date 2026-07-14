@@ -8,6 +8,7 @@ class Section extends Model
 {
 
     protected $table = 'sections';
+    protected $fillable = ['base_price'];
     public function secretary(){
         return $this->hasOne(SecretaryProfile::class);
     }

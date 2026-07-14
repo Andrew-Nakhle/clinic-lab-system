@@ -29,7 +29,7 @@ class RegisterSecretaryRequest extends FormRequest
             'email' => ['required', 'string', 'email','unique:users,email'],
             'password' => ['required', 'string','confirmed'],
             'gender'=>['required','string','in:male,female,other'],
-            //'section_id' => ['required'],
+            'section_id' => ['required','exists:sections,id' ],
             'birth_date'=>['required','date'],
         ];
     }

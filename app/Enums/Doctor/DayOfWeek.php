@@ -2,7 +2,8 @@
 
 namespace App\Enums\Doctor;
 
-enum DayOfWeek: string
+enum
+    DayOfWeek: string
 {
     case Saturday = 'Saturday';
     case Sunday = 'Sunday';

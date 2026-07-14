@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('laboratory_profiles', function (Blueprint $table) {
             $table->id();
+            $table->string('image')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('section_id')->nullable()->constrained('sections')->onDelete('set null');
             $table->string('license_number')->nullable();

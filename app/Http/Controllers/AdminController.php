@@ -3,12 +3,79 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
+use App\Http\Resources\DoctorProfileResource;
+use App\Http\Resources\LaboratoryProfileResource;
+use App\Http\Resources\PatientResource;
 use App\Models\DoctorProfile;
+use App\Models\LaboratoryProfile;
 use App\Models\PatientProfile;
 use App\Models\SecretaryProfile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
+    // ---------------------------
+    // Admin
+    // ---------------------------
+    public function viewProfile()
+    {
+        $user = auth()->user();
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'full_name' => $user->first_name . ' ' . $user->last_name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'image' => $user->profile_image ? asset('storage/' . $user->profile_image) : null,
+            ]
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        // 1. التحقق من البيانات
+        $validatedData = $request->validate([
+            'first_name' => 'sometimes|string|max:255',
+            'last_name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|string|unique:users,phone,' . Auth::id(),
+            'profile_image' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        // 2. معالجة الصورة (هنا يكمن الحل)
+        if ($request->hasFile('profile_image')) {
+            // حذف الصورة القديمة إذا كانت موجودة (اختياري لكن مفضل)
+            if ($user->profile_image) {
+                Storage::disk('public')->delete($user->profile_image);
+            }
+
+            // تخزين الصورة الجديدة في مجلد profile_images داخل الـ public storage
+            $path = $request->file('profile_image')->store('profile_images', 'public');
+
+            // تحديث المصفوفة بالمسار النسبي (الذي سيحفظ في قاعدة البيانات)
+            $validatedData['profile_image'] = $path;
+        }
+
+        // 3. تحديث البيانات
+        $user->update($validatedData);
+
+        // 4. إرجاع الاستجابة
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'full_name' => $user->first_name . ' ' . $user->last_name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'image' => $user->profile_image ? asset('storage/' . $user->profile_image) : null,
+            ]
+        ]);
+    }
+
+
+
     // ---------------------------
     // Doctors
     // ---------------------------
@@ -19,7 +86,7 @@ class AdminController extends Controller
 
         return response()->json([
             'status' => true,
-            'data' => $doctors
+            'data' => DoctorProfileResource::collection($doctors),
         ]);
     }
 
@@ -36,7 +103,7 @@ class AdminController extends Controller
 
         return response()->json([
             'status' => true,
-            'data' => $doctor
+            'data' => new DoctorProfileResource($doctor),
         ]);
     }
 
@@ -98,20 +165,33 @@ class AdminController extends Controller
     // ---------------------------
     // Secretaries
     // ---------------------------
-
     public function viewSecretaries()
     {
-        $secretaries = SecretaryProfile::with('user')->get();
+        // جلب السكرتارية مع المستخدم والقسم المرتبط بهم
+        $secretaries = SecretaryProfile::with(['user', 'section'])->get();
+
+        // استخدام map لتنسيق البيانات لكل سكرتير على حدة
+        $data = $secretaries->map(function ($secretary) {
+            return [
+                'id' => $secretary->id,
+                'name' => $secretary->user ? ($secretary->user->first_name . ' ' . $secretary->user->last_name) : 'غير معروف',
+                'image' => $secretary->image ? asset('storage/' . $secretary->image) : null,
+                'section' => $secretary->section ? $secretary->section->name : 'غير محدد',
+                'status' => $secretary->user->status,
+            ];
+        });
 
         return response()->json([
             'status' => true,
-            'data' => $secretaries
+            'data' => $data,
         ]);
     }
 
     public function viewSecretary(int $id)
     {
-        $secretary = SecretaryProfile::with('user')->find($id);
+        // جلب السكرتير مع علاقة المستخدم والقسم لتحسين الأداء
+        $secretary = SecretaryProfile::with(['user', 'section'])->find($id);
+
         if (!$secretary) {
             return response()->json([
                 'status' => false,
@@ -119,10 +199,19 @@ class AdminController extends Controller
             ], 404);
         }
 
+        // تنسيق البيانات يدوياً (أو استخدام Resource إذا كنت قد أنشأت واحداً)
+        $data = [
+            'id' => $secretary->id,
+            'name' => $secretary->user ? ($secretary->user->first_name . ' ' . $secretary->user->last_name) : 'غير معروف',
+            'image' => $secretary->image ? asset('storage/' . $secretary->image) : null,
+            'section' => $secretary->section->name ?? 'غير محدد',
+            'status' => $secretary->user->status,
+        ];
+
         return response()->json([
             'status' => true,
-            'data' => $secretary
-        ]);
+            'data' => $data
+        ], 200);
     }
 
     public function updateSecretary(int $id)
@@ -187,7 +276,7 @@ class AdminController extends Controller
 
         return response()->json([
             'status' => true,
-            'data' => $patients
+            'data' => PatientResource::collection($patients),
         ]);
     }
 
@@ -204,7 +293,7 @@ class AdminController extends Controller
 
         return response()->json([
             'status' => true,
-            'data' => $patient
+            'data' => new PatientResource($patient),
         ]);
     }
 
@@ -250,6 +339,75 @@ class AdminController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Patient deleted successfully'
+        ]);
+    }
+
+    //----------------
+    // laboratory
+    //----------------
+
+    public function viewLaboratories()
+    {
+        $labs = LaboratoryProfile::with('user')->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => LaboratoryProfileResource::collection($labs), // تأكد من إنشاء هذا Resource
+        ]);
+    }
+
+// 2. عرض مخبري واحد
+    public function viewLaboratory(int $id)
+    {
+        $lab = LaboratoryProfile::with('user')->find($id);
+
+        if (!$lab) {
+            return response()->json(['status' => false, 'message' => 'Laboratory not found'], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => new LaboratoryProfileResource($lab),
+        ]);
+    }
+
+// 3. تفعيل/إلغاء تفعيل حساب المخبري
+    public function updateLaboratoryStatus(int $id)
+    {
+        $lab = LaboratoryProfile::with('user')->find($id);
+
+        if (!$lab || !$lab->user) {
+            return response()->json(['status' => false, 'message' => 'Laboratory or User not found'], 404);
+        }
+
+        // تبديل الحالة
+        $lab->user->status = ($lab->user->status === UserStatus::Active)
+            ? UserStatus::Inactive
+            : UserStatus::Active;
+
+        $lab->user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Status updated successfully',
+            'new_status' => $lab->user->status->value
+        ]);
+    }
+
+// 4. حذف مخبري
+    public function deleteLaboratory(int $id)
+    {
+        $lab = LaboratoryProfile::with('user')->find($id);
+
+        if (!$lab) {
+            return response()->json(['status' => false, 'message' => 'Laboratory not found'], 404);
+        }
+
+        $lab->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Laboratory deleted successfully'
         ]);
     }
 

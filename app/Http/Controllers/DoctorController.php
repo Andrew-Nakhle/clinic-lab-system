@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use  App\Http\Requests\Doctor\UpdateProfileRequest;
 use App\Enums\Appointment\AppointmentStatus;
-use App\Http\Requests\Doctor\UpdateProfileRequest;
 use App\Http\Resources\Appointment\AppointmentResource;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
@@ -16,16 +15,14 @@ class DoctorController extends Controller
 
         $user = auth()->user();
 $validated = $request->validated();
-///////////////////
 if(!$user){
     return response()->json(['message'=>'unauthorized.'],401);
 }
-///////////////////////
 if($request->hasFile('profile_image')){
     $validated['profile_image']=$request->file('profile_image')->store('profile_images','public');
     $user->doctor->update(['profile_image' => $validated['profile_image']]);
 }
-/////////////////////////////
+
         if($request->hasFile('certification'))
         {
             $validated['certification'] =

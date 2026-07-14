@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SecretaryProfile extends Model
 {
     protected $table= 'secretary_profiles';
-    protected $fillable= ['user_id', 'section_id'];
+    protected $fillable= ['user_id', 'section_id', 'image' ];
     public function user()
     {
         return $this->belongsTo(User::class);

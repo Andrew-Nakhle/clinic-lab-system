@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('gender');
             $table->date('birth_date');
+            $table->string('profile_image')->nullable();
 
 //            $table->enum('role', ['doctor', 'patient', 'secretary','admin'])->default('patient');
 //            $table->enum('status', ['active', 'inactive','delete'])->default('active');

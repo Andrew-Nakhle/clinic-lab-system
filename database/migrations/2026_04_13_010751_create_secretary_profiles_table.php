@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('secretary_profiles', function (Blueprint $table) {
             $table->id();
-            //$table->foreignId('section_id')->nullable()->constrained('sections')->onDelete('set null');
+            $table->foreignId('section_id')->nullable()->constrained('sections')->onDelete('set null');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

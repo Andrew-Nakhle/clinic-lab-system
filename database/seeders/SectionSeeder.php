@@ -15,6 +15,8 @@ class SectionSeeder extends Seeder
             'Pediatrics',
             'Orthopedics',
             'Neurology',
+            'laboratory',
+            'surgery '
         ];
 
         foreach ($sections as $section) {

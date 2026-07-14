@@ -15,9 +15,11 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles,HasPermissions ,HasApiTokens;
-    //protected $guard_name = 'web';
+    use HasFactory, Notifiable, HasRoles, HasPermissions, HasApiTokens;
+
+    // protected $guard_name = 'web';
     protected $guard_name = 'api';
+
     protected $casts = [
         'status' => UserStatus::class,
     ];
@@ -27,55 +29,55 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-        protected $fillable = [
-            'first_name',
-            'last_name',
-            'phone',
-            'email',
-            'password',
-            'gender',
-            'birth_date',
-            'otp_code',
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'phone',
+        'email',
+        'password',
+        'gender',
+        'birth_date',
+        'otp_code',
+        'profile_image',
+    ];
 
-        ];
-    public  function generateOtpCode(){
-        $this->otp_code=rand(100000,999999);
-        $this->otp_expires_at=now()->addMinutes(10);
-        $this->timestamps=false;
+    public function generateOtpCode(){
+        $this->otp_code = rand(100000, 999999);
+        $this->otp_expires_at = now()->addMinutes(10);
+        $this->timestamps = false;
         $this->save();
     }
+
+    // -----------------------------------------------------------------------------
+    // العلاقات (Relationships)
+    // -----------------------------------------------------------------------------
 
     public function doctor(){
         return $this->hasOne(DoctorProfile::class);
     }
-     public function secretary()
-     {
-         return $this->hasOne(SecretaryProfile::class);
-     }
-     public function patient()
-     {
-         return $this->hasOne(PatientProfile::class);
-     }
-//    public function doctorAppointments()
-//    {
-//        return $this->hasMany(Appointment::class);
-//    }
 
-//    public function patientAppointments()
-//    {
-//        return $this->hasMany(Appointment::class);
-//    }
-
-//    public function secretaryAppointments()
-//    {
-//        return $this->hasMany(Appointment::class);
-//    }
-    public function payments()
+    public function secretary()
     {
-return $this->hasMany(Payment::class);
+        return $this->hasOne(SecretaryProfile::class);
     }
 
+    public function patient()
+    {
+        return $this->hasOne(PatientProfile::class);
+    }
 
+    /**
+     * 💡 علاقة المستخدم ببروفايل المختبر (تمت إضافتها لحل خطأ الـ Seeder)
+     */
+    public function laboratory()
+    {
+        return $this->hasOne(LaboratoryProfile::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

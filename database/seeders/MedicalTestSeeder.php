@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-// 💡 أضفنا استدعاء الموديل لكي يتعرف عليه لارافل
 use App\Models\MedicalTest;
 
 class MedicalTestSeeder extends Seeder
@@ -63,10 +62,17 @@ class MedicalTestSeeder extends Seeder
             ],
         ];
 
+        // التعديل السحري لحل مشكلة الـ Duplicate Entry
         foreach ($tests as $test) {
-            MedicalTest::create($test);
+            MedicalTest::updateOrCreate(
+                ['code' => $test['code']], // يبحث أولاً بكود التحليل لمنع التكرار
+                [
+                    'name'         => $test['name'],
+                    'price'        => $test['price'],
+                    'display_name' => $test['display_name'],
+                    'normal_range' => $test['normal_range'],
+                ]
+            );
         }
     }
-
-
 }

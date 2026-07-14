@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('sections', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->decimal('base_price', 10, 2)->default(0);
             $table->timestamps();
         });
     }

@@ -7,66 +7,60 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class RegisterResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
-            'id'=>$this->id,
-            'first_name'=>$this->first_name,
-            'last_name'=>$this->last_name,
-            'phone'=>$this->phone,
-            'email'=>$this->email,
-            'gender'=>$this->gender,
-            'birth_date'=>$this->birth_date,
-            'role' => $this->getRoleNames()->first(),
-            'profile'=>$this->getProfileData()
-
+            'id'         => $this->id,
+            'first_name' => $this->first_name,
+            'last_name'  => $this->last_name,
+            'full_name'  => $this->first_name . ' ' . $this->last_name, // مريح للـ Frontend
+            'phone'      => $this->phone,
+            'email'      => $this->email,
+            'gender'     => $this->gender,
+            'birth_date' => $this->birth_date,
+            'role'       => $this->getRoleNames()->first(),
+            'profile'    => $this->getProfileData(),
         ];
     }
-    private function getProfileData()
+
+    private function getProfileData(): ?array
     {
+        // دالة مساعدة لمعالجة المسارات (تحويل المسار إلى رابط كامل)
+        $getImageUrl = fn($path) => $path ? url('storage/' . ltrim($path, '/')) : null;
 
-        if ($this->hasRole('doctor')) {
+        // 1. بروفايل الطبيب
+        if ($this->hasRole('doctor') && $this->doctor) {
             return [
-<<<<<<< HEAD
-<<<<<<< HEAD
-                'prfile_image' => url('storage/' . $this->doctor->profile_image),
-=======
-                'profile_image'=>$this->profile_image ? url('storage/'.$this->doctor->profile_image) :null,
->>>>>>> cbf2b73a062e6a4a087972bd7a80a9052966c2dd
-                'specialization' => $this->doctor->specialization ?? null,
-                'experience_years' => $this->doctor->experience_years ?? null,
-                'certification' => $this->doctor->certification ? url('storage/' . $this->doctor->certification) : null,
-                'bio' => $this->bio ?? null,
-=======
-                        'profile_image'=>$this->doctor->profile_image ? url('storage/'.$this->doctor->profile_image) :null,
-                'specialization' => $this->doctor->specialization ?? null,
-                'experience_years' => $this->doctor->experience_years ?? null,
-                'certification' => $this->doctor->certification ? url('storage/'.$this->doctor->certification): null,
-                'bio' => $this->doctor->bio ?? null,
-                'section_id' => $this->doctor->section_id ?? null,
->>>>>>> 347058423acfaa612372eae2f94fca8a80374f55
+                'type'             => 'doctor',
+                'profile_image'    => $getImageUrl($this->doctor->profile_image),
+                'specialization'   => $this->doctor->specialization,
+                'experience_years' => $this->doctor->experience_years,
+                'certification'    => $getImageUrl($this->doctor->certification),
+                'bio'              => $this->doctor->bio,
+                'section_id'       => $this->doctor->section_id,
             ];
         }
-        if ($this->hasRole('patient')) {
-            return [
-                'tall' => $this->patient->tall,
-                'weight' => $this->patient->weight,
-                'blood_group' => $this->patient->blood_group,
-                'profile_image' => $this->patient->profile_image ? url('storage/' . $this->patient->profile_image) : null,
-                'id_card' => $this->patient->id_card ? url('storage/' . $this->patient->id_card) : null,
 
+        // 2. بروفايل المريض
+        if ($this->hasRole('patient') && $this->patient) {
+            return [
+                'type'          => 'patient',
+                'tall'          => $this->patient->tall,
+                'weight'        => $this->patient->weight,
+                'blood_group'   => $this->patient->blood_group,
+                'profile_image' => $getImageUrl($this->patient->profile_image),
+                'id_card'       => $getImageUrl($this->patient->id_card),
             ];
         }
-         if ($this->hasRole('secretary')){
-             return[
-                 ''
-             ];
 
-         }
+        // 3. بروفايل السكرتير
+        if ($this->hasRole('secretary') && $this->secretary) {
+            return [
+                'type'             => 'secretary',
+                'image'    => $this->getImageUrl($this->secretary->image),
+            ];
+        }
+
+        return null;
     }
 }

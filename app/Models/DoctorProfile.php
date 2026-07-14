@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class DoctorProfile extends Model
 {
-<<<<<<< HEAD
     protected $table = 'doctor_profiles';
 
     protected $fillable = [
@@ -20,33 +19,43 @@ class DoctorProfile extends Model
         'section_id',
     ];
 
+    /**
+     * علاقة البروفايل بالمستخدم الأساسي
+     */
     public function user()
     {
-=======
-    protected $table='doctor_profiles';
-    protected $fillable=['user_id','specialization','qualification','experience_years','bio','certification','profile_image','section_id'];
-    public function user(){
->>>>>>> 347058423acfaa612372eae2f94fca8a80374f55
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id'); // تأكد من تحديد المفتاح الأجنبي
     }
 
+    /**
+     * علاقة الطبيب بالقسم التابع له
+     */
     public function section()
     {
         return $this->belongsTo(Section::class);
     }
-<<<<<<< HEAD
 
+    /**
+     * علاقة الطبيب بمرضاه (Many-to-Many)
+     */
     public function patients()
     {
         return $this->belongsToMany(PatientProfile::class, 'doctor_patient', 'doctor_id', 'patient_id');
-=======
-    public  function doctorAppointments(){
+    }
+
+    /**
+     * علاقة الطبيب بمواعيده (تم دمجها من كود زميلك)
+     */
+    public function doctorAppointments()
+    {
         return $this->hasMany(Appointment::class, 'doctor_id');
     }
+
+    /**
+     * علاقة الطبيب بجدول الدوام الخاص به (تم دمجها من كود زميلك)
+     */
     public function schedules()
     {
-        return $this->hasMany(DoctorSchedule::class,'doctor_id');
->>>>>>> 347058423acfaa612372eae2f94fca8a80374f55
+        return $this->hasMany(DoctorSchedule::class, 'doctor_id');
     }
 }
-
