@@ -43,14 +43,18 @@ class AuthController extends Controller
         ]);
 
         $user->assignRole('patient');
-        $user->patient()->create([
-            'blood_group'                => $validated['blood_group'],
-            'weight'                     => $validated['weight'],
-            'tall'                       => $validated['tall'],
-            'id_card'                    => $validated['id_card'],
-            'profile_image'              => $validated['profile_image'] ?? null,
-            'medical_record_access_code' => PatientProfile::generateMedicalAccessCode(),
+        $code = PatientProfile::generateMedicalAccessCode();
+
+        $patient = $user->patient()->create([
+            'blood_group' => $validated['blood_group'],
+            'weight' => $validated['weight'],
+            'tall' => $validated['tall'],
+            'id_card' => $validated['id_card'],
+            'profile_image' => $validated['profile_image'] ?? null,
+            'medical_record_access_code' => $code,
         ]);
+
+
 
         $user->load('patient');
         return response()->json([

@@ -20,6 +20,7 @@ class PatientProfile extends Model
         'id_card',
         'profile_image',
         'section_id',
+        'medical_record_access_code'
     ];
 
     /**
@@ -32,7 +33,13 @@ class PatientProfile extends Model
 
     public static function generateMedicalAccessCode()
     {
-        return strtoupper(Str::random(8));
+        do{
+            $code = Str::random(6);
+        }
+        while(self::where('medical_record_access_code', $code)->exists());
+
+        return $code;
+
     }
 
     public function section()

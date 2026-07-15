@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\MedicalTest;
 
-class MedicalTestSeeder extends Seeder
+class   MedicalTestSeeder extends Seeder
 {
     public function run(): void
     {

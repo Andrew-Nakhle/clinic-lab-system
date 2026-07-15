@@ -24,7 +24,7 @@ class RegisterResource extends JsonResource
         ];
     }
 
-    private function getProfileData(): ?array
+    private function getProfileData()
     {
         // دالة مساعدة لمعالجة المسارات (تحويل المسار إلى رابط كامل)
         $getImageUrl = fn($path) => $path ? url('storage/' . ltrim($path, '/')) : null;
@@ -63,6 +63,5 @@ class RegisterResource extends JsonResource
             ];
         }
 
-        return null;
     }
 }
