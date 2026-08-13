@@ -26,10 +26,12 @@ class PermissionSeeder extends Seeder
             'delete_doctors',
             'view_doctors',
             'get_areas',
+            'view_doctors_by_section',
 //////////DOCTOR//////
             'update_doctor_profile',
             'view_doctor_profile',
             'get_medical_record',
+            'get_medical_notes',
             /////////////////////patient////////////
             'create_appointment_by_patient',
             'availableSlots',

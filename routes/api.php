@@ -119,10 +119,12 @@ use App\Http\Controllers\{
 
                 Route::prefix('doctors')->group(function () {
                 Route::post('/register', [AuthController::class, 'registerDoctor']);
+                    Route::get('/viewDoctorsBySection', [AdminController::class, 'ViewDoctorsBySection']);
                 Route::get('/', [AdminController::class, 'viewDoctors']);
                 Route::get('/{id}', [AdminController::class, 'viewDoctor']);
                 Route::patch('/{id}/status', [AdminController::class, 'updateDoctor']);
                 Route::delete('/{id}', [AdminController::class, 'deleteDoctor']);
+
             });
 
             Route::prefix('secretaries')->group(function () {
@@ -159,6 +161,7 @@ use App\Http\Controllers\{
             Route::get('/medicalRecord', [DoctorController::class, 'getMedicalRecord']);
             Route::get('lab-requests', [DoctorLabRequestController::class, 'store']);
             Route::get('lab-requests/{labRequest}', [DoctorLabRequestController::class, 'show']);
+            Route::get('/medicalNotes/{id}', [DoctorController::class, 'getMedicalNotes']);
         });
 
         // Laboratory

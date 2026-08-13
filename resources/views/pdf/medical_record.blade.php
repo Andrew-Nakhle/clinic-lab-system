@@ -144,12 +144,19 @@
 
     <table>
 
+
+
         <tr>
 
             <td class="label">Patient Name</td>
 
             <td>{{ $patient->user->first_name }} {{ $patient->user->last_name }}</td>
 
+        </tr>
+
+        <tr>
+            <td class="label">Medical Notes</td>
+            <td>{{ $patient->medical_notes ?? 'None' }}</td>
         </tr>
 
         <tr>
@@ -188,7 +195,7 @@
 
                 <td class="label">Doctor</td>
 
-                <td>{{ $report->doctor->user->first_name }} {{ $report->doctor->user->last_name }}</td>
+                <td>{{ $report->doctor->user->first_name ?? 'N/A' }} {{ $report->doctor->user->last_name  ?? '' }}</td>
 
             </tr>
 
@@ -204,7 +211,7 @@
 
                 <td class="label">Appointment Date</td>
 
-                <td>{{ $report->appointment->start_at }}</td>
+                <td>{{ $report->appointment->start_at ?? 'N/A' }}</td>
 
             </tr>
 
@@ -212,7 +219,7 @@
 
                 <td class="label">Created At</td>
 
-                <td>{{ $report->created_at->format('Y-m-d H:i') }}</td>
+                <td>{{ $report->created_at->format('Y-m-d H:i') ?? 'N/A' }}</td>
 
             </tr>
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Appointment\AppointmentStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -32,7 +33,8 @@ return new class extends Migration
             $table->decimal('price', 8, 2);
 
             // حالة الموعد (دمج الحالات في enum واحد شامل)
-            $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled', 'booked'])->default('pending');
+
+            $table->string('status')->default(AppointmentStatus::Booked->value);
 
             $table->timestamps();
         });

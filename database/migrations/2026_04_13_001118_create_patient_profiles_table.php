@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('tall');
             $table->smallInteger('weight');
             $table->string('medical_record_access_code')->unique()->nullable();
+            $table->text('medical_notes')->nullable();
             $table->timestamps();
         });
 

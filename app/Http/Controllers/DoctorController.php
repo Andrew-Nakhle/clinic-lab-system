@@ -137,4 +137,14 @@ class DoctorController extends Controller
 
         return $pdf->download('medical_record.pdf');
     }
+    public function getMedicalNotes($id)//pateint profile id
+    {
+       if(! $patient = PatientProfile::with('user')->find($id))
+           return response()->json(['message' => 'patient not found'], 404);
+        return response()->json([
+            'patient' => $patient->user->first_name . ' ' . $patient->user->last_name,
+            'medical_notes' => $patient->medical_notes,
+        ]);
+    }
+
 }

@@ -3,9 +3,12 @@
 namespace Database\Seeders;
 
 use App\Enums\UserStatus;
+use App\Models\DoctorProfile;
+use App\Models\PatientProfile;
 use App\Models\User;
 use App\Models\Section;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
 class RoleAssignPermissionSeeder extends Seeder
@@ -58,7 +61,8 @@ class RoleAssignPermissionSeeder extends Seeder
                 'update_doctors',
                 'view_doctors',
                 'delete_doctors',
-                'get_areas'
+                'get_areas',
+                'view_doctors_by_section'
             ]);
         }
 
@@ -67,113 +71,205 @@ class RoleAssignPermissionSeeder extends Seeder
             $doctorRole->givePermissionTo([
                 'update_doctor_profile',
                 'view_doctor_profile',
-                'get_medical_record'
+                'get_medical_record',
+                'get_medical_notes',
             ]);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. إنشاء حساب Admin تجريبي
-        |--------------------------------------------------------------------------
-        */
-        $adminUser = User::firstOrCreate(
-            ['email' => 'adm@example.com'],
-            [
-                'first_name' => 'مدير',
-                'last_name'  => 'النظام',
-                'phone'      => '0590000000',
-                'password'   => bcrypt('abc123'),
-                'gender'     => 'male',
-                'birth_date' => '1988-06-15',
-            ]
-        );
-        $adminUser->assignRole('admin');
 
         /*
         |--------------------------------------------------------------------------
-        | 3. إنشاء حساب مريض تجريبي (Patient)
+        | Admin 1
         |--------------------------------------------------------------------------
         */
-        $patientUser = User::firstOrCreate(
-            ['email' => 'pat@example.com'],
-            [
-                'first_name' => 'مريض',
-                'last_name'  => 'المنصور',
-                'phone'      => '0591111111',
-                'password'   => bcrypt('abc123'),
-                'gender'     => 'male',
-                'birth_date' => '1995-05-15',
-            ]
-        );
 
-        $patientUser->assignRole('patient');
+        $admin = User::create([
+            'first_name' => 'Admin',
+            'last_name' => '1',
+            'phone' => '0999000001',
+            'email' => 'admin1@gmail.com',
+            'password' => Hash::make('password'),
+            'gender' => 'male',
+            'birth_date' => '1990-01-01',
+            'status' => UserStatus::Active->value,
+        ]);
 
-        if (!$patientUser->patient()->exists()) {
-            $patientUser->patient()->create([
-                'blood_group'   => 'O+',
-                'weight'        => '75',
-                'tall'          => '178',
-                'id_card'       => 'id_cards/default_seeder_card.png',
-                'profile_image' => 'profile_images/default_seeder_avatar.png',
-                'section_id'    => $defaultSectionId,
-            ]);
+        $admin->assignRole('admin');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor 1
+        |--------------------------------------------------------------------------
+        */
+
+        $doctorUser1 = User::create([
+            'first_name' => 'Doctor',
+            'last_name' => '1',
+            'phone' => '0999000002',
+            'email' => 'doctor1@gmail.com',
+            'password' => Hash::make('password'),
+            'gender' => 'male',
+            'birth_date' => '1985-05-10',
+            'status' => UserStatus::Active->value,
+        ]);
+
+        $doctorUser1->assignRole('doctor');
+
+        $doctor1 = DoctorProfile::create([
+            'user_id' => $doctorUser1->id,
+            'section_id' => null,
+            'specialization' => 'Cardiology',
+            'qualification' => 'MD',
+            'experience_years' => 10,
+            'bio' => 'Test Doctor 1',
+            'certification' => 'Cardiology Certificate',
+            'profile_image' => null,
+            'consultation_fee' => 10.00,
+            'home_visit_fee' => 20.00,
+            'monthly_salary' => 1000.00,
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor 2
+        |--------------------------------------------------------------------------
+        */
+
+        $doctorUser2 = User::create([
+            'first_name' => 'Doctor',
+            'last_name' => '2',
+            'phone' => '0999000003',
+            'email' => 'doctor2@gmail.com',
+            'password' => Hash::make('password'),
+            'gender' => 'female',
+            'birth_date' => '1988-08-15',
+            'status' => UserStatus::Active->value,
+        ]);
+
+        $doctorUser2->assignRole('doctor');
+
+        $doctor2 = DoctorProfile::create([
+            'user_id' => $doctorUser2->id,
+            'section_id' => null,
+            'specialization' => 'Dermatology',
+            'qualification' => 'MD',
+            'experience_years' => 7,
+            'bio' => 'Test Doctor 2',
+            'certification' => 'Dermatology Certificate',
+            'profile_image' => null,
+            'consultation_fee' => 15.00,
+            'home_visit_fee' => 25.00,
+            'monthly_salary' => 1200.00,
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor 1 Schedules
+        |--------------------------------------------------------------------------
+        */
+
+        $doctor1Schedules = [
+            ['day_of_week' => 'Sunday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Monday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Tuesday',   'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Wednesday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+
+            ['day_of_week' => 'Thursday',  'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
+            ['day_of_week' => 'Saturday',  'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+        ];
+
+        foreach ($doctor1Schedules as $schedule) {
+            $doctor1->schedules()->create($schedule);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 4. إنشاء حساب مخبري تجريبي (Laboratory)
-        |--------------------------------------------------------------------------
-        */
-        $labUser = User::firstOrCreate(
-            ['email' => 'lab@example.com'],
-            [
-                'first_name' => 'مخبري',
-                'last_name'  => 'الرازي',
-                'phone'      => '0595555555',
-                'password'   => bcrypt('abc123'),
-                'gender'     => 'male',
-                'birth_date' => '1990-01-01',
-            ]
-        );
-
-        $labUser->assignRole('laboratory');
-
-        if (!$labUser->laboratory()->exists()) {
-            $labUser->laboratory()->create([
-                'license_number' => 'LAB-2026-XYZ99',
-                'section_id'     => $defaultSectionId,
-            ]);
-        }
 
         /*
         |--------------------------------------------------------------------------
-        | 5. إنشاء حساب طبيب تجريبي (Doctor)
+        | Doctor 2 Schedules
         |--------------------------------------------------------------------------
         */
-        $doctorUser = User::firstOrCreate(
-            ['email' => 'doc@example.com'],
-            [
-                'first_name' => 'دكتور',
-                'last_name'  => 'الخطيب',
-                'phone'      => '0592222222',
-                'password'   => bcrypt('abc123'),
-                'gender'     => 'male',
-                'birth_date' => '1985-04-12',
-            ]
-        );
 
-        $doctorUser->assignRole('doctor');
+        $doctor2Schedules = [
+            ['day_of_week' => 'Sunday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Monday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Tuesday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Wednesday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
 
-        if (!$doctorUser->doctor()->exists()) {
-            $doctorUser->doctor()->create([
-                'profile_image'    => 'profile_images/default_doctor_avatar.png',
-                'certification'    => 'certifications/default_certificate.png',
-                'section_id'       => $defaultSectionId,
-                'experience_years' => 10,
-                'bio'              => 'استشاري جراحة عامة.',
-                'qualification'    => 'البورد العربي',
-                'specialization'   => 'جراحة عامة',
-            ]);
+            ['day_of_week' => 'Thursday',  'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
+            ['day_of_week' => 'Saturday',  'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
+        ];
+
+        foreach ($doctor2Schedules as $schedule) {
+            $doctor2->schedules()->create($schedule);
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Patient 1
+        |--------------------------------------------------------------------------
+        */
+
+        $patientUser1 = User::create([
+            'first_name' => 'Patient',
+            'last_name' => '1',
+            'phone' => '0999000004',
+            'email' => 'patient1@gmail.com',
+            'password' => Hash::make('password'),
+            'gender' => 'male',
+            'birth_date' => '2000-01-15',
+            'status' => UserStatus::Active->value,
+        ]);
+
+        $patientUser1->assignRole('patient');
+
+        PatientProfile::create([
+            'user_id' => $patientUser1->id,
+            'section_id' => null,
+            'profile_image' => null,
+            'id_card' =>  'id_cards/OmVfSdVCkIp0UPDM2AbfZ4zZ6zkwKhElvyww7hz.jpg',
+            'blood_group' => 'A+',
+            'tall' => 175,
+            'weight' => 70,
+            'medical_record_access_code' => PatientProfile::generateMedicalAccessCode(),
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Patient 2
+        |--------------------------------------------------------------------------
+        */
+
+        $patientUser2 = User::create([
+            'first_name' => 'Patient',
+            'last_name' => '2',
+            'phone' => '0999000005',
+            'email' => 'patient2@gmail.com',
+            'password' => Hash::make('password'),
+            'gender' => 'female',
+            'birth_date' => '1998-06-20',
+            'status' => UserStatus::Active->value,
+        ]);
+
+        $patientUser2->assignRole('patient');
+
+        PatientProfile::create([
+            'user_id' => $patientUser2->id,
+            'section_id' => null,
+            'profile_image' => null,
+            'id_card' =>  'id_cards/OmVfSdVCkIp0UPDM2AbfZ4zZ6zkwKhElvyww7hz.jpg',
+            'blood_group' => 'O+',
+            'tall' => 165,
+            'weight' => 60,
+            'medical_record_access_code' => PatientProfile::generateMedicalAccessCode(),
+        ]);
+
+
+        $this->command->info('Test data created successfully.');
+        $this->command->info('All test users password: password');
     }
 }

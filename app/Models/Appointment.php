@@ -36,4 +36,8 @@ public function area(){
 public function report(){
         return $this->hasOne(Report::class);
 }
+    public function prescription()
+    {
+        return $this->hasOne(Prescription::class, 'appointment_id');
+    }
 }

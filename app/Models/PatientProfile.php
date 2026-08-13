@@ -46,4 +46,12 @@ class PatientProfile extends Model
     {
         return $this->belongsTo(Section::class);
     }
+    public function reports(){
+        return $this->hasMany(Report::class, 'patient_id');
+    }
+
+    public function prescriptions()
+    {
+        return $this->hasMany(Prescription::class, 'patient_id');
+    }
 }

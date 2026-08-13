@@ -9,6 +9,7 @@ class DoctorProfileResource extends JsonResource
     public function toArray($request)
     {
         return [
+
             'full_name' => $this->user ? ($this->user->first_name . ' ' . $this->user->last_name) : 'غير معروف',
             'profile'   => [
                 'specialization'   => $this->specialization,

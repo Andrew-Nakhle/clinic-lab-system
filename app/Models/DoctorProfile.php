@@ -66,4 +66,8 @@ class DoctorProfile extends Model
     {
         return $this->hasMany(Report::class, 'doctor_id');
     }
+    public function prescriptions()
+    {
+        return $this->hasMany(Prescription::class, 'doctor_id');
+    }
 }

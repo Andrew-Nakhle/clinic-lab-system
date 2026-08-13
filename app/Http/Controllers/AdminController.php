@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
 use App\Http\Resources\DoctorProfileResource;
+use App\Http\Resources\DoctorResource;
 use App\Http\Resources\LaboratoryProfileResource;
 use App\Http\Resources\PatientResource;
 use App\Http\Resources\Auth\RegisterResource;
@@ -12,6 +13,7 @@ use App\Models\DoctorProfile;
 use App\Models\LaboratoryProfile;
 use App\Models\PatientProfile;
 use App\Models\SecretaryProfile;
+use App\Models\Section;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,8 +82,19 @@ class AdminController extends Controller
         $doctors = DoctorProfile::with('user')->get();
         return response()->json([
             'status' => true,
-            'data' => DoctorProfileResource::collection($doctors),
+            'data' => DoctorResource::collection($doctors),
         ]);
+    }
+    public function ViewDoctorsBySection(Request $request)
+    {
+$validatedData = $request->validate([
+    'section_id'=>['required','exists:sections,id'],
+]);
+$section = Section::with('doctors.user')->where('id', $validatedData['section_id'])->first();
+$doctors = $section->doctors;
+return response()->json([
+    'doctors' => DoctorResource::collection($doctors),
+]);
     }
 
     public function viewDoctor(int $id)
