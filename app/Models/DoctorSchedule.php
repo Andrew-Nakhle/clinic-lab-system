@@ -13,6 +13,7 @@ class DoctorSchedule extends Model
         'day_of_week',
         'start_time',
         'end_time',
+        'schedule_type'
     ];
     protected $casts = [
         'day_of_week' => DayOfWeek::class,
