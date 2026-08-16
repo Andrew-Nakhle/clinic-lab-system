@@ -20,7 +20,7 @@ class RegisterResource extends JsonResource
             'gender'     => $this->gender,
             'birth_date' => $this->birth_date,
             'role'       => $this->getRoleNames()->first(),
-            'profile_image' => $this->profile_image ? url('storage/'.$this->profile_image,) : null,
+            'profile_image' => $this->profile_image ? url('storage/'.$this->profile_image) : null,
             'profile'    => $this->getProfileData(),
         ];
     }
