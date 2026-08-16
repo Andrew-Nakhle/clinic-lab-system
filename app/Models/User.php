@@ -78,12 +78,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Payment::class);
     }
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * الرسائل التي استقبلها هذا المستخدم
      */
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
+
+
     protected $hidden = [
         'password',
         'remember_token',
