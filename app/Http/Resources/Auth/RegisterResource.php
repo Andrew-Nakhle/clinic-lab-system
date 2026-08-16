@@ -20,6 +20,9 @@ class RegisterResource extends JsonResource
             'gender'     => $this->gender,
             'birth_date' => $this->birth_date,
             'role'       => $this->getRoleNames()->first(),
+            'profile_image' => $this->profile_image
+                ? url('storage/' . ltrim($this->profile_image, '/'))
+                : null,
             'profile'    => $this->getProfileData(),
         ];
     }
@@ -36,7 +39,16 @@ class RegisterResource extends JsonResource
                 'profile_image'    => $getImageUrl($this->doctor->profile_image),
                 'specialization'   => $this->doctor->specialization,
                 'experience_years' => $this->doctor->experience_years,
-                'certification'    => $getImageUrl($this->doctor->certification),
+
+                'certifications' => $this->doctor->certifications
+                    ->map(function ($certification) {
+                        return [
+                            'id' => $certification->id,
+                            'certification_url' => url(
+                                'storage/' . ltrim($certification->certification, '/')
+                            ),
+                        ];
+                    }),
                 'bio'              => $this->doctor->bio,
                 'section_id'       => $this->doctor->section_id,
             ];
@@ -49,7 +61,6 @@ class RegisterResource extends JsonResource
                 'tall'                       => $this->patient->tall,
                 'weight'                     => $this->patient->weight,
                 'blood_group'                => $this->patient->blood_group,
-                'profile_image'              => $getImageUrl($this->patient->profile_image),
                 'id_card'                    => $getImageUrl($this->patient->id_card),
                 'medical_record_access_code' => $this->patient->medical_record_access_code,
             ];

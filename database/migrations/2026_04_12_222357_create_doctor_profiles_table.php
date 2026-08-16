@@ -23,8 +23,8 @@ return new class extends Migration
             $table->string('qualification')->nullable();
             $table->integer('experience_years')->nullable();
             $table->text('bio')->nullable();
-            $table->string('certification')->nullable();
-            $table->string('profile_image')->nullable();
+//            $table->string('certification')->nullable();
+//            $table->string('profile_image')->nullable();
 
             // الأعمدة المالية المضافة من كود زميلك
             $table->decimal('consultation_fee', 8, 2)->nullable();

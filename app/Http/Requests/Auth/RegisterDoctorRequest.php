@@ -64,7 +64,8 @@ class RegisterDoctorRequest extends FormRequest
             'profile_image' => ['required', 'image'],
             'birth_date' => ['required', 'date'],
             'section_id' => ['required', 'exists:sections,id', 'integer'],
-            'certification' => ['required', 'image'],
+            'certifications' => ['required', 'array'],
+            'certifications.*' => ['file', 'mimes:jpg,jpeg,png,pdf'],
             'experience_years' => ['required', 'integer'],
         ];
     }

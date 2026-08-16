@@ -79,7 +79,7 @@ class AdminController extends Controller
     // ---------------------------
     public function viewDoctors()
     {
-        $doctors = DoctorProfile::with('user')->get();
+        $doctors = DoctorProfile::with('user','schedules','certifications')->get();
         return response()->json([
             'status' => true,
             'data' => DoctorResource::collection($doctors),
@@ -90,7 +90,7 @@ class AdminController extends Controller
 $validatedData = $request->validate([
     'section_id'=>['required','exists:sections,id'],
 ]);
-$section = Section::with('doctors.user')->where('id', $validatedData['section_id'])->first();
+$section = Section::with('doctors.user','doctors.certifications','doctors.schedules')->where('id', $validatedData['section_id'])->first();
 $doctors = $section->doctors;
 return response()->json([
     'doctors' => DoctorResource::collection($doctors),

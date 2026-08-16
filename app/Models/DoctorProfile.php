@@ -70,4 +70,12 @@ class DoctorProfile extends Model
     {
         return $this->hasMany(Prescription::class, 'doctor_id');
     }
+    public function certifications()
+    {
+        return $this->hasMany(DoctorCertification::class, 'doctor_id');
+    }
+    public function articles()
+    {
+        return $this->hasMany(MedicalArticle::class, 'doctor_id');
+    }
 }

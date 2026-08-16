@@ -7,4 +7,6 @@ enum UserStatus: string {
     case Inactive = 'inactive';
     case deleted = 'deleted';
 
+    case Banned = 'banned';
+
 }

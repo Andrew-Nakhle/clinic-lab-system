@@ -162,6 +162,13 @@ use App\Http\Controllers\{
             Route::get('lab-requests', [DoctorLabRequestController::class, 'store']);
             Route::get('lab-requests/{labRequest}', [DoctorLabRequestController::class, 'show']);
             Route::get('/medicalNotes/{id}', [DoctorController::class, 'getMedicalNotes']);
+            Route::post('/completeAppointment', [DoctorController::class, 'completeAppointment']);
+            Route::post('/createArticle', [DoctorController::class, 'createArticle']);
+            Route::post('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
+            Route::put('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
+            Route::delete('/medical-articles/{id}', [DoctorController::class, 'deleteArticle']);
+            Route::get('/medical-articles/category', [DoctorController::class, 'getArticlesByCategory']);
+            Route::get('/medical-articles/doctor/{doctor_id}', [DoctorController::class, 'getArticlesByDoctor']);
         });
 
         // Laboratory
@@ -176,6 +183,9 @@ use App\Http\Controllers\{
         Route::middleware(['role:patient', 'active'])->prefix('patient')->group(function () {
             Route::post('/appointment', [AppointmentController::class, 'bookByPatient']);
             Route::get('/appointments/available-slots', [AppointmentController::class, 'availableSlots']);
+            Route::post('/updatePatientProfile', [AuthController::class, 'updatePatientProfile']);
+            Route::put('/updatePatientProfile', [AuthController::class, 'updatePatientProfile']);
+
         });
     });
 

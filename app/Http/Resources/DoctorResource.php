@@ -21,9 +21,35 @@ class DoctorResource extends JsonResource
             'bio' => $this->bio,
             'qualification' => $this->qualification,
             'specialization' => $this->specialization,
-            'profile_image_url' => $this->profile_image ? asset('storage/' . $this->profile_image) : null,
-            'certification_url' => $this->certification ? asset('storage/' . $this->certification) : null,
-            'user' => $this->whenLoaded('user'),
+            'consultation_fee'=>$this->consultation_fee,
+//            'profile_image_url' => $this->profile_image ? asset('storage/' . $this->profile_image) : null,
+            'certifications' => $this->whenLoaded('certifications', function () {
+                return $this->certifications->map(function ($certification) {
+                    return [
+                        'id' => $certification->id,
+                        'certification_url' => url(
+                            'storage/' . $certification->certification
+                        ),
+                    ];
+                });
+            }),
+            'user' => $this->whenLoaded('user', function () {
+                return [
+                    'id' => $this->user->id,
+                    'first_name' => $this->user->first_name,
+                    'last_name' => $this->user->last_name,
+                    'full_name' => $this->user->first_name . ' ' . $this->user->last_name,
+                    'phone' => $this->user->phone,
+                    'email' => $this->user->email,
+                    'gender' => $this->user->gender,
+                    'birth_date' => $this->user->birth_date,
+
+                    'profile_image_url' => $this->user->profile_image
+                        ? url('storage/' . $this->user->profile_image)
+                        : null,
+                ];
+            }),
+            'schedule' => $this->whenLoaded('schedules'),
         ];
     }
 }

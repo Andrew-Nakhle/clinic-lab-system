@@ -7,123 +7,100 @@
 
     <style>
 
-        body{
+        body {
             font-family: DejaVu Sans, sans-serif;
-            font-size:13px;
-            color:#222;
-            margin:25px;
+            font-size: 13px;
+            color: #222;
+            margin: 25px;
         }
 
-        .header{
-            text-align:center;
-            margin-bottom:30px;
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
-        .header h1{
-            margin:0;
-            font-size:28px;
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
         }
 
-        .header p{
-            margin-top:8px;
-            color:#666;
-            font-size:14px;
+        .header p {
+            margin-top: 8px;
+            color: #666;
+            font-size: 14px;
         }
 
-        .patient-card{
-
-            border:1px solid #444;
-
-            padding:15px;
-
-            margin-bottom:30px;
-
+        .patient-card {
+            border: 1px solid #444;
+            padding: 15px;
+            margin-bottom: 30px;
         }
 
-        .patient-card table{
-
-            width:100%;
-
+        .patient-card table {
+            width: 100%;
         }
 
-        .patient-card td{
-
-            padding:6px;
-
+        .patient-card td {
+            padding: 6px;
         }
 
-        .report{
-
-            border:1px solid #555;
-
-            margin-bottom:25px;
-
-            padding:15px;
-
+        .report {
+            border: 1px solid #555;
+            margin-bottom: 25px;
+            padding: 15px;
         }
 
-        .report-title{
-
-            font-size:18px;
-
-            font-weight:bold;
-
-            margin-bottom:15px;
-
-            border-bottom:1px solid #999;
-
-            padding-bottom:8px;
-
+        .report-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #999;
+            padding-bottom: 8px;
         }
 
-        .info-table{
-
-            width:100%;
-
-            margin-bottom:15px;
-
+        .info-table {
+            width: 100%;
+            margin-bottom: 15px;
         }
 
-        .info-table td{
-
-            padding:5px;
-
-            vertical-align:top;
-
+        .info-table td {
+            padding: 5px;
+            vertical-align: top;
         }
 
-        .label{
-
-            font-weight:bold;
-
-            width:150px;
-
+        .label {
+            font-weight: bold;
+            width: 150px;
         }
 
-        .report-body{
-
-            margin-top:15px;
-
-            border:1px solid #ddd;
-
-            padding:15px;
-
-            min-height:80px;
-
-            line-height:1.8;
-
+        .report-body {
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            min-height: 80px;
+            line-height: 1.8;
         }
 
-        .footer{
+        .images-section {
+            margin-top: 20px;
+        }
 
-            margin-top:40px;
+        .images-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
 
-            text-align:center;
+        .report-image {
+            max-width: 250px;
+            max-height: 250px;
+            margin: 5px;
+        }
 
-            font-size:12px;
-
-            color:#777;
-
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
         }
 
     </style>
@@ -140,44 +117,52 @@
 
 </div>
 
+
+{{-- Patient Information --}}
+
 <div class="patient-card">
 
     <table>
 
-
-
         <tr>
-
             <td class="label">Patient Name</td>
 
-            <td>{{ $patient->user->first_name }} {{ $patient->user->last_name }}</td>
-
+            <td>
+                {{ $patient->user->first_name ?? 'N/A' }}
+                {{ $patient->user->last_name ?? '' }}
+            </td>
         </tr>
 
         <tr>
             <td class="label">Medical Notes</td>
-            <td>{{ $patient->medical_notes ?? 'None' }}</td>
+
+            <td>
+                {{ $patient->medical_notes ?? 'None' }}
+            </td>
         </tr>
 
         <tr>
-
             <td class="label">Generated At</td>
 
-            <td>{{ now()->format('Y-m-d H:i') }}</td>
-
+            <td>
+                {{ now()->format('Y-m-d H:i') }}
+            </td>
         </tr>
 
         <tr>
-
             <td class="label">Number of Reports</td>
 
-            <td>{{ $reports->count() }}</td>
-
+            <td>
+                {{ $reports->count() }}
+            </td>
         </tr>
 
     </table>
 
 </div>
+
+
+{{-- Reports --}}
 
 @foreach($reports as $report)
 
@@ -189,51 +174,94 @@
 
         </div>
 
+
+        {{-- Report Information --}}
+
         <table class="info-table">
 
             <tr>
 
                 <td class="label">Doctor</td>
 
-                <td>{{ $report->doctor->user->first_name ?? 'N/A' }} {{ $report->doctor->user->last_name  ?? '' }}</td>
+                <td>
+                    {{ $report->doctor->user->first_name ?? 'N/A' }}
+                    {{ $report->doctor->user->last_name ?? '' }}
+                </td>
 
             </tr>
+
 
             <tr>
 
                 <td class="label">Department</td>
 
-                <td>{{ $report->doctor->section->name ?? 'N/A' }}</td>
+                <td>
+                    {{ $report->doctor->section->name ?? 'N/A' }}
+                </td>
 
             </tr>
+
 
             <tr>
 
                 <td class="label">Appointment Date</td>
 
-                <td>{{ $report->appointment->start_at ?? 'N/A' }}</td>
+                <td>
+                    {{ optional($report->appointment)->start_at ?? 'N/A' }}
+                </td>
 
             </tr>
+
 
             <tr>
 
                 <td class="label">Created At</td>
 
-                <td>{{ $report->created_at->format('Y-m-d H:i') ?? 'N/A' }}</td>
+                <td>
+                    {{ optional($report->created_at)->format('Y-m-d H:i') ?? 'N/A' }}
+                </td>
 
             </tr>
 
         </table>
 
+
+        {{-- Report Text --}}
+
         <div class="report-body">
 
-            {{ $report->report }}
+            {{ $report->report ?? 'No report content.' }}
 
         </div>
+
+
+        {{-- Report Images --}}
+
+        @if($report->images && $report->images->count() > 0)
+
+            <div class="images-section">
+
+                <div class="images-title">
+                    Report Attachments
+                </div>
+
+                @foreach($report->images as $image)
+
+                    <img
+                        src="{{ public_path('storage/' . $image->image) }}"
+                        class="report-image"
+                    >
+
+                @endforeach
+
+            </div>
+
+        @endif
 
     </div>
 
 @endforeach
+
 
 <div class="footer">
 

@@ -32,9 +32,16 @@ class PermissionSeeder extends Seeder
             'view_doctor_profile',
             'get_medical_record',
             'get_medical_notes',
+            'complete_appointment',
+            'create_article',
+            'update_article',
+            'delete_article',
+            'get_articles_by_category',
+            'get_articles_by_doctor',
             /////////////////////patient////////////
             'create_appointment_by_patient',
             'availableSlots',
+            'update_patient_profile',
 
             ///////////////////Secretaty/////////////
             'search_patient',

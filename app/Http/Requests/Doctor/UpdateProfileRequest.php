@@ -31,7 +31,13 @@ class UpdateProfileRequest extends FormRequest
                 'birth_date' => ['sometimes', 'date'],
                 'profile_image' => ['sometimes', 'image'],
                 'section_id' => ['sometimes', 'integer', 'exists:sections,id'],
-                'certification' => ['sometimes', 'image'],
+
+                'certifications' => ['nullable', 'array'],
+
+                'certifications.*' => [
+                    'file',
+                    'mimes:jpg,jpeg,png,pdf',
+                ],
                 'experience_years' => ['sometimes', 'integer'],
 //                'current_password' => ['required_with:password', 'current_password'],
 //                'password' => ['sometimes', 'confirmed', 'min:8'],

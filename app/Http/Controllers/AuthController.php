@@ -9,21 +9,35 @@ use App\Http\Requests\Auth\RegisterAdminRequest;
 use App\Http\Requests\Auth\RegisterDoctorRequest;
 use App\Http\Requests\Auth\RegisterPatientRequest;
 use App\Http\Requests\Auth\RegisterSecretaryRequest;
+use App\Http\Requests\Patient\UpdatePatientProfileRequest;
 use App\Http\Requests\RegisterLaboratoryRequest;
 use App\Http\Resources\Auth\LoginResource;
 use App\Http\Resources\Auth\RegisterResource;
 use App\Models\PatientProfile;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Database\Seeders\RolePermissionSeeder;
 
 class AuthController extends Controller
 {
     public function registerPatient(RegisterPatientRequest $request)
     {
         $validated = $request->validated();
+        $existingUser = User::where('phone', $validated['phone'])->first();
+
+        if ($existingUser && $existingUser->status === UserStatus::Banned) {
+            return response()->json([
+                'message' => 'This phone number is banned from the system. You cannot create a new account.'
+            ], 403);
+        }
+
+        if ($existingUser) {
+            return response()->json([
+                'message' => 'This phone number is already registered.'
+            ], 422);
+        }
         $validated['password'] = Hash::make($validated['password']);
 
         if ($request->hasFile('id_card')) {
@@ -40,7 +54,9 @@ class AuthController extends Controller
             'password'   => $validated['password'],
             'gender'     => $validated['gender'],
             'birth_date' => $validated['birth_date'],
+            'profile_image' => $validated['profile_image'] ?? null,
         ]);
+
 
         $user->assignRole('patient');
         $code = PatientProfile::generateMedicalAccessCode();
@@ -50,7 +66,7 @@ class AuthController extends Controller
             'weight' => $validated['weight'],
             'tall' => $validated['tall'],
             'id_card' => $validated['id_card'],
-            'profile_image' => $validated['profile_image'] ?? null,
+
             'medical_record_access_code' => $code,
         ]);
 
@@ -71,9 +87,9 @@ class AuthController extends Controller
             ? $request->file('profile_image')->store('profile_images', 'public')
             : null;
 
-        $data['certification'] = $request->hasFile('certification')
-            ? $request->file('certification')->store('certifications', 'public')
-            : null;
+//        $data['certification'] = $request->hasFile('certification')
+//            ? $request->file('certification')->store('certifications', 'public')
+//            : null;
 
         $validated['password'] = Hash::make($validated['password']);
 
@@ -85,16 +101,28 @@ class AuthController extends Controller
             'password'   => $validated['password'],
             'gender'     => $validated['gender'],
             'birth_date' => $validated['birth_date'],
+            'profile_image'    => $data['profile_image'],
         ]);
 
         $user->assignRole('doctor');
 
         $doctor = $user->doctor()->create([
-            'profile_image'    => $data['profile_image'],
+
             'section_id'       => $validated['section_id'],
-            'certification'    => $data['certification'],
             'experience_years' => $validated['experience_years'],
         ]);
+
+        if ($request->hasFile('certifications')) {
+
+            foreach ($request->file('certifications') as $certification) {
+
+                $path = $certification->store('certifications', 'public');
+
+                $doctor->certifications()->create([
+                    'certification' => $path,
+                ]);
+            }
+        }
 
         foreach ($validated['schedules'] as $schedule) {
             $doctor->schedules()->create([
@@ -161,10 +189,15 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Invalid Credentials'], 401);
         }
-
-        if (isset($user->status) && $user->status === UserStatus::Inactive) {
-            return response()->json(['message' => 'Your account is inactive. Please contact the administrator.'], 403);
+        if ($user->status === UserStatus::Banned) {
+            return response()->json([
+                'message' => 'Your account has been banned from the system. You cannot log in.'
+            ], 403);
         }
+
+//        if (isset($user->status) && $user->status === UserStatus::Inactive) {
+//            return response()->json(['message' => 'Your account is inactive. Please contact the administrator.'], 403);
+//        }
 
         if (!Auth::attempt(['phone' => $validated['phone'], 'password' => $validated['password']])) {
             return response()->json(['message' => 'Invalid Credentials'], 401);
@@ -247,6 +280,52 @@ class AuthController extends Controller
         return response()->json([
             'is_logged_in' => auth()->check(),
             'user'         => auth()->user()
+        ]);
+    }
+    public function updatePatientProfile(UpdatePatientProfileRequest $request)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthorized.'
+            ], 401);
+        }
+
+        $validated = $request->validated();
+
+        // Profile image
+        if ($request->hasFile('profile_image')) {
+            $validated['profile_image'] = $request->file('profile_image')
+                ->store('profile_images', 'public');
+        }
+
+        // ID card
+        if ($request->hasFile('id_card')) {
+            $validated['id_card'] = $request->file('id_card')
+                ->store('id_cards', 'public');
+        }
+
+        // Update user
+        $user->update([
+            'first_name' => $validated['first_name'] ?? $user->first_name,
+            'last_name' => $validated['last_name'] ?? $user->last_name,
+            'phone' => $validated['phone'] ?? $user->phone,
+            'gender' => $validated['gender'] ?? $user->gender,
+            'birth_date' => $validated['birth_date'] ?? $user->birth_date,
+            'profile_image' => $validated['profile_image'] ?? $user->profile_image,
+        ]);
+
+        // Update patient profile
+        $user->patient->update([
+            'tall' => $validated['tall'] ?? $user->patient->tall,
+            'weight' => $validated['weight'] ?? $user->patient->weight,
+            'blood_group' => $validated['blood_group'] ?? $user->patient->blood_group,
+            'id_card' => $validated['id_card'] ?? $user->patient->id_card,
+        ]);
+
+        return response()->json([
+            'message' => 'Patient profile updated successfully.'
         ]);
     }
 }

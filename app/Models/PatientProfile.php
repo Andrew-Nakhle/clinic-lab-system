@@ -20,7 +20,8 @@ class PatientProfile extends Model
         'id_card',
         'profile_image',
         'section_id',
-        'medical_record_access_code'
+        'medical_record_access_code',
+        'medical_notes'
     ];
 
     /**

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('section_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('profile_image')->nullable();
+//            $table->string('profile_image')->nullable();
             $table->string('id_card');
             $table->string('blood_group');
             $table->integer('tall');

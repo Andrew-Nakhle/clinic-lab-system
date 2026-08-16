@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Report extends Model
 {
-    protected $fillable = ['patient_id', 'doctor_id', 'report'];
+    protected $fillable = ['patient_id', 'doctor_id', 'report','appointment_id'];
     public function patient(){
         return $this->belongsTo(PatientProfile::class, 'patient_id');
     }
@@ -16,4 +16,8 @@ class Report extends Model
         public function appointment(){
         return $this->belongsTo(Appointment::class);
         }
+    public function images()
+    {
+        return $this->hasMany(ReportImage::class);
+    }
 }
