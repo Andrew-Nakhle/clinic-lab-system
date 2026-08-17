@@ -32,7 +32,7 @@ class AdminController extends Controller
                 'full_name' => $user->first_name . ' ' . $user->last_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
-                'image' => $user->profile_image ? asset('storage/' . $user->profile_image) : null,
+                'image' => $user->profile_image ? url('storage/' . $user->profile_image) : null,
             ]
         ]);
     }
@@ -79,9 +79,16 @@ class AdminController extends Controller
     // ---------------------------
     public function viewDoctors()
     {
-        $doctors = DoctorProfile::with('user','schedules','certifications')->get();
+        $doctors = DoctorProfile::with('user', 'schedules', 'certifications')->get();
+
+        $activeDoctors = $doctors->where('user.status', UserStatus::Active)->count();
+
+        $bannedDoctors = $doctors->where('user.status', UserStatus::Banned)->count();
+
         return response()->json([
             'status' => true,
+            'active_doctors_count' => $activeDoctors,
+            'banned_doctors_count' => $bannedDoctors,
             'data' => DoctorResource::collection($doctors),
         ]);
     }
@@ -200,9 +207,22 @@ return response()->json([
     public function viewPatients()
     {
         $patients = PatientProfile::with('user')->get();
-        return response()->json(['status' => true, 'data' => PatientResource::collection($patients)]);
-    }
 
+        $activePatients = $patients
+            ->where('user.status', UserStatus::Active)
+            ->count();
+
+        $bannedPatients = $patients
+            ->where('user.status', UserStatus::Banned)
+            ->count();
+
+        return response()->json([
+            'status' => true,
+            'active_patients_count' => $activePatients,
+            'banned_patients_count' => $bannedPatients,
+            'data' => PatientResource::collection($patients),
+        ]);
+    }
     public function viewPatient(int $id)
     {
         $patient = PatientProfile::with('user')->find($id);

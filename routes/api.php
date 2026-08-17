@@ -49,8 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Admin
-    Route::get('/', [AdminController::class, 'viewPatients'])->middleware('permission:view_patients','active');
-    Route::get('/', [AdminController::class, 'viewDoctors'])->middleware('permission:view_doctors','active');
+    Route::get('/patients/', [AdminController::class, 'viewPatients'])->middleware('permission:view_patients','active');
+    Route::get('/doctors/', [AdminController::class, 'viewDoctors'])->middleware('permission:view_doctors','active');
     Route::middleware(['role:admin', 'active'])->group(function () {
         Route::post('/updateProfile', [AdminController::class, 'updateProfile']);
 
