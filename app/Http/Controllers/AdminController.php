@@ -64,7 +64,7 @@ class AdminController extends Controller
                 'full_name' => $user->first_name . ' ' . $user->last_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
-                'image' => $user->profile_image ? asset('storage/' . $user->profile_image) : null,
+                'image' => $user->profile_image ? url('storage/' . $user->profile_image) : null,
             ]
         ]);
     }
@@ -150,7 +150,7 @@ return response()->json([
             return [
                 'id' => $secretary->id,
                 'name' => $secretary->user ? ($secretary->user->first_name . ' ' . $secretary->user->last_name) : 'غير معروف',
-                'image' => $secretary->image ? asset('storage/' . $secretary->image) : null,
+                'image' => $secretary->image ? url('storage/' . $secretary->image) : null,
                 'section' => $secretary->section ? $secretary->section->name : 'غير محدد',
                 'status' => $secretary->user->status,
             ];
@@ -167,7 +167,7 @@ return response()->json([
         $data = [
             'id' => $secretary->id,
             'name' => $secretary->user ? ($secretary->user->first_name . ' ' . $secretary->user->last_name) : 'غير معروف',
-            'image' => $secretary->image ? asset('storage/' . $secretary->image) : null,
+            'image' => $secretary->image ? url('storage/' . $secretary->image) : null,
             'section' => $secretary->section->name ?? 'غير محدد',
             'status' => $secretary->user->status,
         ];

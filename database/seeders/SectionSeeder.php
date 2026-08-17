@@ -11,12 +11,17 @@ class SectionSeeder extends Seeder
     {
         $sections = [
             'Cardiology',
-            'Dermatology',
-            'Pediatrics',
-            'Orthopedics',
+            'Pulmonology',
+            'Gastroenterology',
+            'Urology',
+            'Ophthalmology',
             'Neurology',
-            'laboratory',
-            'surgery '
+            'ENT',
+            'Dermatology',
+            'Orthopedics',
+            'Dentistry',
+            'Gynecology',
+
         ];
 
         foreach ($sections as $section) {
