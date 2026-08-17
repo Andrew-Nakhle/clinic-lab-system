@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Enums\Appointment\AppointmentMadeBy;
 use App\Enums\Appointment\AppointmentStatus;
 use App\Enums\Appointment\AppointmentType;
+use App\Enums\Payment\PaymentMethod;
 use App\Http\Requests\Appointment\AvailableSlotsRequest;
 use App\Http\Requests\Appointment\BookAppointmentBySecretaryRequest;
 use App\Http\Requests\Appointment\BookAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Area;
 use App\Models\DoctorProfile;
+use App\Services\PaymentService;
 use Carbon\Carbon;
 
 
@@ -53,14 +55,14 @@ class AppointmentController extends Controller
     }
 
 
-    public function bookByPatient(BookAppointmentRequest $request)
+    public function bookByPatient(BookAppointmentRequest $request,PaymentService $paymentService)
     {
         $validated = $request->validated();
         $doctor = DoctorProfile::find($validated['doctor_id']);
 
         $start_at = Carbon::parse($validated['start_at']);
         $end_at = $start_at->copy()->addMinutes(15);
-        $date = $start_at->toDateString();
+        $date = $start_at->toDateString();//لحول الوقت لتاريخ ووقت استعملو مع تابع getAvailableSlots
 
         $availableSlots = $this->getAvailableSlots(
             $doctor,
@@ -79,8 +81,24 @@ else
         $validated['end_at'] = $end_at;
         $validated['patient_id'] = auth()->user()->patient->id;
 
-        $validated['status'] = AppointmentStatus::Booked->value;
-        Appointment::create($validated);
+        $paymentMethod = $validated['payment_method'];
+
+        if ($paymentMethod === PaymentMethod::Online->value) {
+            $status = AppointmentStatus::PendingPayment->value;
+        } else {
+            $status = AppointmentStatus::Booked->value;
+        }
+
+        $appointment = Appointment::create([
+            'doctor_id' => $doctor->id,
+            'patient_id' => $validated['patient_id'],
+            'start_at' => $start_at,
+            'end_at' => $end_at,
+            'appointment_type' => $validated['appointment_type'],
+            'made_by' => AppointmentMadeBy::Patient->value,
+            'price' =>  $validated['price'],
+            'status' => $status,
+        ]);
         return response()->json(['message' => 'Appointment Booked']);
     }
 

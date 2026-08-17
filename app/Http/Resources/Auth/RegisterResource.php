@@ -49,6 +49,13 @@ class RegisterResource extends JsonResource
                     }),
                 'bio'              => $this->doctor->bio,
                 'section_id'       => $this->doctor->section_id,
+                'service_areas' => $this->doctor->serviceAreas
+                    ->map(function ($serviceArea) {
+                    return [
+                        'id' => $serviceArea->area_id,
+                        'name' => $serviceArea->area->name,
+                    ];
+                }),
             ];
         }
 

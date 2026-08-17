@@ -17,6 +17,7 @@ class DoctorProfile extends Model
         'certification',
         'profile_image',
         'section_id',
+
     ];
 
     /**

@@ -15,4 +15,15 @@ class PaymentService
             config('services.stripe.secret')
         );
     }
+    public function createPaymentIntent(float $amount, string $currency, int $appointmentId, int $patientId) {
+        return $this->stripe->paymentIntents->create([
+            'amount' => (int) round($amount * 100),//كرمال تحويل من cents ل dollar لان سترايب بيستقبل cents
+            'currency' => $currency,
+
+            'metadata' => [
+                'appointment_id' => $appointmentId,
+                'patient_id' => $patientId,
+            ],
+        ]);
+    }
 }

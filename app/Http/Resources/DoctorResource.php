@@ -33,6 +33,16 @@ class DoctorResource extends JsonResource
                     ];
                 });
             }),
+
+            'service_areas' => $this->whenLoaded('serviceAreas', function () {
+                return $this->serviceAreas->map(function ($serviceArea) {
+                    return [
+                        'id' => $serviceArea->area->id,
+                        'name' => $serviceArea->area->name,
+                    ];
+                });
+            }),
+
             'user' => $this->whenLoaded('user', function () {
                 return [
                     'id' => $this->user->id,
@@ -50,6 +60,7 @@ class DoctorResource extends JsonResource
                 ];
             }),
             'schedule' => $this->whenLoaded('schedules'),
+
         ];
     }
 }

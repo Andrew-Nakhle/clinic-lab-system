@@ -112,6 +112,11 @@ class AuthController extends Controller
             'experience_years' => $validated['experience_years'],
         ]);
 
+        foreach ($validated['service_areas'] ?? [] as $areaId) {
+            $doctor->serviceAreas()->create([
+                'area_id' => $areaId,
+            ]);
+        }
         if ($request->hasFile('certifications')) {
 
             foreach ($request->file('certifications') as $certification) {
@@ -139,6 +144,7 @@ class AuthController extends Controller
             'user'    => new RegisterResource($user)
         ], 201);
     }
+
 
     public function registerSecretary(RegisterSecretaryRequest $request)
     {
