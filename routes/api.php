@@ -11,7 +11,8 @@ use App\Http\Controllers\{
     AppointmentController,
     LabTechnicianController,
     DoctorLabRequestController,
-    ChatController
+    ChatController,
+    PatientLabRequestController
 };
 
 Route::prefix('auth')->group(function () {
@@ -46,7 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin
     Route::middleware(['role:admin', 'active'])->group(function () {
         Route::post('/updateProfile', [AdminController::class, 'updateProfile']);
-
+        Route::get('/viewProfile', [AdminController::class, 'viewProfile']);
         Route::prefix('doctors')->group(function () {
             Route::post('/register', [AuthController::class, 'registerDoctor']);
             Route::get('/viewDoctorsBySection', [AdminController::class, 'ViewDoctorsBySection']);
@@ -75,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/register', [AuthController::class, 'labRegister']);
             Route::get('/', [AdminController::class, 'viewLaboratories']);
             Route::get('/{id}', [AdminController::class, 'viewLaboratory']);
-            Route::patch('/{id}/status', [AdminController::class, 'updateLaboratoryStatus']);
+            Route::put('/{id}/status', [AdminController::class, 'updateLaboratoryStatus']);
             Route::delete('/{id}', [AdminController::class, 'deleteLaboratory']);
         });
     });
@@ -88,7 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/viewAppointments/previous', [DoctorController::class, 'previousAppointments']);
         Route::get('/viewAppointments/upcoming', [DoctorController::class, 'upcomingAppointments']);
         Route::get('/medicalRecord', [DoctorController::class, 'getMedicalRecord']);
-        Route::get('lab-requests', [DoctorLabRequestController::class, 'store']);
+        Route::post('/lab-requests', [DoctorLabRequestController::class, 'store']);
         Route::get('lab-requests/{labRequest}', [DoctorLabRequestController::class, 'show']);
         Route::get('/medicalNotes/{id}', [DoctorController::class, 'getMedicalNotes']);
         Route::post('/completeAppointment', [DoctorController::class, 'completeAppointment']);
@@ -102,6 +103,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Laboratory
     Route::middleware(['role:laboratory', 'active'])->prefix('laboratory')->group(function () {
+        Route::get('/profile',[LabTechnicianController::class, 'viewProfile']);
         Route::post('/update', [LabTechnicianController::class, 'updateProfile']);
         Route::get('pending-requests', [LabTechnicianController::class, 'index']);
         Route::post('submit-results/{labRequest}', [LabTechnicianController::class, 'submitResults']);
@@ -118,4 +120,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // Chat Routes
     Route::get('/chat/{receiverId}', [ChatController::class, 'index']);
     Route::post('/chat/send', [ChatController::class, 'sendMessage']);
+
+    Route::middleware(['auth:sanctum'])->prefix('patient')->group(function () {
+        // جلب التحاليل المتاحة للطلب
+        Route::get('/medical-tests', [PatientLabRequestController::class, 'indexAvailableTests']);
+
+        // إرسال وتأكيد طلب التحليل الجديد (المتوافق مع واجهات الحجز واختيار الموعد)
+        Route::post('/lab-requests', [PatientLabRequestController::class, 'store']);
+
+        // عرض تفاصيل طلب تحليل محدد
+        Route::get('/lab-requests/{labRequest}', [PatientLabRequestController::class, 'show']);
+    });
+
 });

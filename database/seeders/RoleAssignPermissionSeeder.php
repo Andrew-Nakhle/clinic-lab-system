@@ -45,7 +45,7 @@ class RoleAssignPermissionSeeder extends Seeder
             [
                 'first_name' => 'Super',
                 'last_name'  => 'Admin',
-                'phone'      => '0000000000',
+                'phone'      => '0000000000', // <-- تم تصحيح اسم العمود
                 'password'   => bcrypt('abc123'),
                 'gender'     => 'male',
                 'birth_date' => '1990-01-01',
@@ -160,8 +160,8 @@ $patientRole=Role::where('name', 'patient')->first();
             'first_name' => 'Doctor',
             'last_name' => '2',
             'phone' => '0999000003',
-            'email' => 'doctor2@gmail.com',
-            'password' => Hash::make('password'),
+            'email' => 'doc@example.com',
+            'password' => Hash::make('abc123'),
             'gender' => 'female',
             'profile_image' => 'profile_images/2JYc3c568bFu1L3IduttA0woAUyOes2Ol7QEPzko.jpg',
             'birth_date' => '1988-08-15',
@@ -237,7 +237,7 @@ $patientRole=Role::where('name', 'patient')->first();
             'first_name' => 'Patient',
             'last_name' => '1',
             'phone' => '0999000004',
-            'email' => 'patient1@gmail.com',
+            'email' => 'pat@example.com',
             'password' => Hash::make('password'),
             'gender' => 'male',
             'birth_date' => '2000-01-15',
@@ -391,5 +391,43 @@ $patientRole=Role::where('name', 'patient')->first();
 
         $this->command->info('Test data created successfully.');
         $this->command->info('All test users password: password');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Laboratory Technician 1
+        |--------------------------------------------------------------------------
+        */
+
+        // 1. التأكد من وجود دور الـ lab_technician (أو إنشاءه إذا لزم الأمر)
+        $labRole = Role::firstOrCreate(['name' => 'lab_technician']);
+
+        // 2. إنشاء مستخدم جديد للمختبر
+        $labUser = User::create([
+            'first_name'    => 'Laboratory',
+            'last_name'     => 'Technician',
+            'phone'         => '0999000006',
+            'email'         => 'lab@example.com',
+            'password'      => Hash::make('password'),
+            'gender'        => 'male',
+            'birth_date'    => '1992-03-10',
+            'profile_image' => 'profile_images/2JYc3c568bFu1L3IduttA0woAUyOes2Ol7QEPzko.jpg',
+            'status'        => 'active',
+        ]);
+
+        // 3. إسناد الدور للمستخدم
+        $labUser->assignRole('laboratory'); // أو المعرّف الخاص بالدور حسب نظامك
+
+        // 4. إنشاء ملف المختبر (Laboratory Profile) باستخدام موديل LaboratoryProfile
+        \App\Models\LaboratoryProfile::create([
+            'user_id'        => $labUser->id,
+            'section_id'     => $defaultSectionId, // القسم الافتراضي الذي تم جلبه في بداية الـ Seeder
+            'license_number' => 'LAB-LIC-10045',
+            'image'          => 'laboratory_images/sample_lab.jpg',
+        ]);
     }
+
 }
+
+
+
