@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('section_id')->nullable()->constrained()->onDelete('set null');
-
-            $table->string('stripe_payment_intent_id')->nullable();
+            $table->foreignId('appointment_id')->constrained()->onDelete('cascade');
+            $table->string('stripe_payment_intent_id')->nullable()->unique();
+            $table->string('payment_method');
             $table->string('provider');
             $table->string('status');//pending,paid,failed,refunded
             $table->decimal('amount', 10, 2);
@@ -29,6 +28,7 @@ return new class extends Migration
 
             $table->timestamps();
         });
+
     }
 
     /**

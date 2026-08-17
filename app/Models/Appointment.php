@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
-    protected $fillable= ['doctor_id','doctor_schedule_id','patient_id','secretary_id','start_at','end_at','status','made_by','price','appointment_type'];
+    protected $fillable= ['doctor_id','patient_id','secretary_id','start_at','end_at','status','made_by','price','appointment_type'];
 
     protected $casts = [
         'made_by' => AppointmentMadeBy::class,
@@ -39,5 +39,9 @@ public function report(){
     public function prescription()
     {
         return $this->hasOne(Prescription::class, 'appointment_id');
+    }
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
     }
 }

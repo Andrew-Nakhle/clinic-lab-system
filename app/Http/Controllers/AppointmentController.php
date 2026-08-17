@@ -43,6 +43,7 @@ class AppointmentController extends Controller
         });
         $availableSlots = [];
         foreach ($slots as $slot) {
+
             if (!$bookedSlots->contains($slot)) {
                 $availableSlots[] = $slot;
             }

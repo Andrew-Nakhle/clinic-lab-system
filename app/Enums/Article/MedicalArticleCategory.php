@@ -11,7 +11,7 @@ enum MedicalArticleCategory :string
     case Urology = 'Urology';
     case Ophthalmology = 'Ophthalmology';
     case Neurology = 'Neurology';
-    case Otolaryngology = 'Otolaryngology (ENT)';
+    case Otolaryngology = 'ENT';
     case Dermatology = 'Dermatology';
     case Orthopedics = 'Orthopedics';
     case Dentistry = 'Dentistry';

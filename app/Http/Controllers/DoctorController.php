@@ -11,6 +11,7 @@ use App\Http\Requests\Doctor\GetMedicalRecordRequest;
 use App\Http\Requests\Doctor\UpdateMedicalArticleRequest;
 use App\Http\Requests\Doctor\UpdateProfileRequest;
 use App\Http\Resources\Appointment\AppointmentResource;
+use App\Http\Resources\Article\ArticleResource;
 use App\Models\Appointment;
 use App\Models\DoctorProfile;
 use App\Models\MedicalArticle;
@@ -20,6 +21,7 @@ use App\Models\Report;
 use Barryvdh\DomPDF\Facade\Pdf;
 use http\Env\Request;
 use Illuminate\Validation\Rules\Enum;
+use mysql_xdevapi\Collection;
 
 class DoctorController extends Controller
 {
@@ -276,7 +278,7 @@ $validated = $request->validated();
 
         return response()->json([
             'message' => 'Article created successfully',
-            'article' => $article
+            'article' => new ArticleResource($article)
         ], 201);
     }
     public function updateArticle(UpdateMedicalArticleRequest $request, $id) {
@@ -312,7 +314,7 @@ $validated = $request->validated();
 
         return response()->json([
             'message' => 'Article updated successfully',
-            'article' => $article->fresh(),
+            'article' =>  new ArticleResource($article->fresh()),
         ]);
     }
     public function deleteArticle($id)
@@ -339,7 +341,7 @@ $validated = $request->validated();
             'message' => 'Article deleted successfully'
         ]);
     }
-    public function getArticlesByCategory(Request $request)
+    public function getArticlesByCategory(\Illuminate\Http\Request $request)
     {
         $validated = $request->validate([
             'category' => [
@@ -354,7 +356,7 @@ $validated = $request->validated();
             ->get();
 
         return response()->json([
-            'articles' => $articles,
+            'articles' => ArticleResource::collection($articles),
         ]);
     }
     public function getArticlesByDoctor($doctor_id)
@@ -370,7 +372,7 @@ $validated = $request->validated();
             ->get();
 
         return response()->json([
-            'articles' => $articles,
+            'articles' => ArticleResource::collection($articles),
         ]);
     }
 

@@ -20,6 +20,10 @@ class PermissionSeeder extends Seeder
             'manage_salaries',
             'set_minimum_wage',
             'set_doctor_commission',
+            'get_articles_by_category',
+            'get_articles_by_doctor',
+            'view_doctors',
+            'view_patients',
             ///////////////////////////ADMIN////////////////////////////////////////////
             'create_doctors',
             'update_doctors',
@@ -27,6 +31,9 @@ class PermissionSeeder extends Seeder
             'view_doctors',
             'get_areas',
             'view_doctors_by_section',
+            'get_articles_by_category',
+            'get_articles_by_doctor',
+            'view_patients',
 //////////DOCTOR//////
             'update_doctor_profile',
             'view_doctor_profile',
@@ -42,6 +49,9 @@ class PermissionSeeder extends Seeder
             'create_appointment_by_patient',
             'availableSlots',
             'update_patient_profile',
+            'get_articles_by_category',
+            'get_articles_by_doctor',
+            'patient_appointments',
 
             ///////////////////Secretaty/////////////
             'search_patient',

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Appointment;
 
 use App\Enums\Appointment\AppointmentType;
+use App\Enums\Payment\PaymentMethod;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,6 +31,8 @@ class BookAppointmentRequest extends FormRequest
             'start_at' => ['required', 'date', 'after:now'],
 
             'appointment_type' => ['required', Rule::enum(AppointmentType::class),],
+
+            'payment_method' => ['required', Rule::enum(PaymentMethod::class),],
 
         ];
     }

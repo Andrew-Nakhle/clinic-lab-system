@@ -12,6 +12,7 @@ class MedicalArticle extends Model
         'title',
         'content',
         'image',
+        'category'
     ];
     protected $casts = [
         'category' => MedicalArticleCategory::class,
