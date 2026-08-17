@@ -13,6 +13,8 @@ use App\Http\Controllers\{
     DoctorLabRequestController,
     ChatController
 };
+use Stripe\PaymentIntent;
+use Stripe\Stripe;
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'loginUser']);
@@ -25,9 +27,12 @@ Route::prefix('auth')->group(function () {
 Route::post('verifyOtp', [OtpController::class, 'verifyLoginOtp']);
 Route::post('resendOtp', [OtpController::class, 'resendLoginOtp']);
 
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/test-auth', [AuthController::class, 'testAuth']);
 
+    Route::get('/medical-articles/category', [DoctorController::class, 'getArticlesByCategory'])->middleware('permission:get_articles_by_category','active');
+    Route::get('/medical-articles/doctor/{doctor_id}', [DoctorController::class, 'getArticlesByDoctor'])->middleware('permission:get_articles_by_doctor','active');
     // Super Admin
     Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
         Route::prefix('admins')->group(function () {
@@ -44,13 +49,15 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Admin
+    Route::get('/', [AdminController::class, 'viewPatients'])->middleware('permission:view_patients','active');
+    Route::get('/', [AdminController::class, 'viewDoctors'])->middleware('permission:view_doctors','active');
     Route::middleware(['role:admin', 'active'])->group(function () {
         Route::post('/updateProfile', [AdminController::class, 'updateProfile']);
 
         Route::prefix('doctors')->group(function () {
             Route::post('/register', [AuthController::class, 'registerDoctor']);
             Route::get('/viewDoctorsBySection', [AdminController::class, 'ViewDoctorsBySection']);
-            Route::get('/', [AdminController::class, 'viewDoctors']);
+//نقلتها لفوق كرمال يستعملها عند
             Route::get('/{id}', [AdminController::class, 'viewDoctor']);
             Route::patch('/{id}/status', [AdminController::class, 'updateDoctor']);
             Route::delete('/{id}', [AdminController::class, 'deleteDoctor']);
@@ -65,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         Route::prefix('patients')->group(function () {
-            Route::get('/', [AdminController::class, 'viewPatients']);
+
             Route::get('/{id}', [AdminController::class, 'viewPatient']);
             Route::patch('/{id}', [AdminController::class, 'updatePatient']);
             Route::delete('/{id}', [AdminController::class, 'deletePatient']);
@@ -80,7 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 
-    // Doctor
+
+
+    //Doctor
     Route::middleware(['role:doctor', 'active'])->prefix('doctor')->group(function () {
         Route::post('/profile', [DoctorController::class, 'updateProfile']);
         Route::put('/profile', [DoctorController::class, 'updateProfile']);
@@ -96,8 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
         Route::put('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
         Route::delete('/medical-articles/{id}', [DoctorController::class, 'deleteArticle']);
-        Route::get('/medical-articles/category', [DoctorController::class, 'getArticlesByCategory']);
-        Route::get('/medical-articles/doctor/{doctor_id}', [DoctorController::class, 'getArticlesByDoctor']);
+
     });
 
     // Laboratory
@@ -113,9 +121,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/appointments/available-slots', [AppointmentController::class, 'availableSlots']);
         Route::post('/updatePatientProfile', [AuthController::class, 'updatePatientProfile']);
         Route::put('/updatePatientProfile', [AuthController::class, 'updatePatientProfile']);
+        Route::get('/appointments', [AppointmentController::class, 'patientAppointments']);
     });
 
     // Chat Routes
     Route::get('/chat/{receiverId}', [ChatController::class, 'index']);
     Route::post('/chat/send', [ChatController::class, 'sendMessage']);
+
+    //Stripe
+
+
+
 });

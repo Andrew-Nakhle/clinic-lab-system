@@ -36,7 +36,8 @@ return [
     ],
 
     'stripe' => [
-        'secret'=>env('STRIPE_SECRET')
+        'secret'=>env('STRIPE_SECRET'),
+         'currency' => env('STRIPE_CURRENCY', 'usd'),
     ],
 
 ];

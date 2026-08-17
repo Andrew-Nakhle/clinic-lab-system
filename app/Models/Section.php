@@ -16,9 +16,5 @@ class Section extends Model
     {
         return $this->hasMany(DoctorProfile::class);
     }
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
 
 }

@@ -25,7 +25,7 @@ return new class extends Migration
 
             // تفاصيل المحاضر والوقت والتاريخ المدمجة
             $table->string('made_by');
-            $table->dateTime('appointment_date')->nullable(); // للحفاظ على التوافق إذا كان مستخدماً في مكان آخر
+//            $table->dateTime('appointment_date')->nullable(); // للحفاظ على التوافق إذا كان مستخدماً في مكان آخر
             $table->dateTime('start_at');
             $table->dateTime('end_at');
 

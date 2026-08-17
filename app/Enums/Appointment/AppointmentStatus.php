@@ -8,4 +8,6 @@ enum AppointmentStatus : string
     case Cancelled = 'cancelled';
     case Completed = 'completed';
     case NoShow = 'no_show';        // المريض ما حضر (اختياري)
+
+    case PendingPayment = 'pending_payment';
 }

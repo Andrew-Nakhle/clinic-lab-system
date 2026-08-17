@@ -74,10 +74,7 @@ class User extends Authenticatable
         return $this->hasOne(LaboratoryProfile::class);
     }
 
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
+
     public function sentMessages()
     {
         return $this->hasMany(Message::class, 'sender_id');

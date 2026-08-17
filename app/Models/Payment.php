@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Payment\PaymentMethod;
 use App\Enums\Payment\PaymentProvider;
 use App\Enums\Payment\PaymentStatus;
 use Illuminate\Database\Eloquent\Model;
@@ -9,30 +10,29 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     protected $fillable = [
-        'user_id',
-        'section_id',
-        'amount',
+        'appointment_id',
+        'stripe_payment_intent_id',
+        'payment_method',
+        'provider',
         'status',
-        'completed_at',
+        'amount',
         'currency',
         'metadata',
-        'payment_intent_id',
-        'provider',
-        'refunded_at'
+        'completed_at',
+        'refunded_at',
     ];
     protected $casts = [
         'metadata' => 'array',
         'status' => PaymentStatus::class,
         'provider' => PaymentProvider::class,
         'completed_at' => 'datetime',
-        'refunded_at' => 'datetime'
+        'refunded_at' => 'datetime',
+        'payment_method'=>PaymentMethod::class,
 
     ];
-    public function user(){
-        return $this->belongsTo(User::class, 'user_id');
-    }
-    public function section(){
-        return $this->belongsTo(Section::class, 'section_id');
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class);
     }
     public function markAsCompleted($paymentIntentId,$metadata=[]){
 $this->update([
