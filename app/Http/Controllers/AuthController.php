@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Schedule\ScheduleType;
 use App\Enums\UserStatus;
 use App\Http\Requests\Auth\LoginManagersRequest;
 use App\Http\Requests\Auth\LoginUserRequest;
@@ -14,6 +15,7 @@ use App\Http\Requests\RegisterLaboratoryRequest;
 use App\Http\Resources\Auth\LoginResource;
 use App\Http\Resources\Auth\RegisterResource;
 use App\Models\PatientProfile;
+use App\Models\Section;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\Request;
@@ -105,11 +107,17 @@ class AuthController extends Controller
         ]);
 
         $user->assignRole('doctor');
-
+        $section = Section::findOrFail($validated['section_id']);
+        $hasHomeVisit = collect($validated['schedules'])
+            ->contains('schedule_type', ScheduleType::Home->value);
         $doctor = $user->doctor()->create([
 
             'section_id'       => $validated['section_id'],
             'experience_years' => $validated['experience_years'],
+            'consultation_fee' =>  $section->base_price,
+            'home_visit_fee'   => $hasHomeVisit
+                ? $section->base_price * 2.5
+                : null,
         ]);
 
         foreach ($validated['service_areas'] ?? [] as $areaId) {

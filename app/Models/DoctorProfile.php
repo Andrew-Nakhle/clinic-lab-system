@@ -17,6 +17,8 @@ class DoctorProfile extends Model
         'certification',
         'profile_image',
         'section_id',
+        'consultation_fee',
+        'home_visit_fee',
 
     ];
 

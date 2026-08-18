@@ -34,9 +34,11 @@ class RegisterResource extends JsonResource
         if ($this->hasRole('doctor') && $this->doctor) {
             return [
                 'type'             => 'doctor',
-                'profile_image'    => $getImageUrl($this->doctor->profile_image),
                 'specialization'   => $this->doctor->specialization,
                 'experience_years' => $this->doctor->experience_years,
+                'consultation_fee'=>$this->doctor->consultation_fee,
+                'home_visit_fee'=>$this->doctor->home_visit_fee,
+
 
                 'certifications' => $this->doctor->certifications
                     ->map(function ($certification) {

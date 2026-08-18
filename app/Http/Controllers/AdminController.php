@@ -299,4 +299,12 @@ return response()->json([
         $lab->delete();
         return response()->json(['status' => true, 'message' => 'Laboratory deleted successfully']);
     }
+    public function viewSections()
+    {
+        $sections=Section::all();
+        return response()->json([
+            'sections' => $sections
+        ]);
+    }
+
 }

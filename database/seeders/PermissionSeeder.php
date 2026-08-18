@@ -24,6 +24,7 @@ class PermissionSeeder extends Seeder
             'get_articles_by_doctor',
             'view_doctors',
             'view_patients',
+            'view_sections',
             ///////////////////////////ADMIN////////////////////////////////////////////
             'create_doctors',
             'update_doctors',
@@ -34,6 +35,7 @@ class PermissionSeeder extends Seeder
             'get_articles_by_category',
             'get_articles_by_doctor',
             'view_patients',
+            'view_sections',
 //////////DOCTOR//////
             'update_doctor_profile',
             'view_doctor_profile',

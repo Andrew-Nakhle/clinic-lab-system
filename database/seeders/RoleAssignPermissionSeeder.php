@@ -40,7 +40,8 @@ class RoleAssignPermissionSeeder extends Seeder
                 'get_articles_by_category',
                 'get_articles_by_doctor',
                 'view_patients',
-                'view_doctors'
+                'view_doctors',
+                'view_sections',
 
             ]);
         }
@@ -73,6 +74,7 @@ class RoleAssignPermissionSeeder extends Seeder
                 'get_articles_by_category',
                 'get_articles_by_doctor',
                 'view_patients',
+                'view_sections'
             ]);
         }
 

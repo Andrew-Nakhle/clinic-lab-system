@@ -29,6 +29,13 @@ Route::post('resendOtp', [OtpController::class, 'resendLoginOtp']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/test-auth', [AuthController::class, 'testAuth']);
 
+
+
+
+
+    Route::get('/medical-articles/category', [DoctorController::class, 'getArticlesByCategory'])->middleware('permission:get_articles_by_category','active');
+    Route::get('/medical-articles/doctor/{doctor_id}', [DoctorController::class, 'getArticlesByDoctor'])->middleware('permission:get_articles_by_doctor','active');
+
     // Super Admin
     Route::middleware('role:super_admin')->prefix('super-admin')->group(function () {
         Route::prefix('admins')->group(function () {
@@ -97,8 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
         Route::put('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
         Route::delete('/medical-articles/{id}', [DoctorController::class, 'deleteArticle']);
-        Route::get('/medical-articles/category', [DoctorController::class, 'getArticlesByCategory']);
-        Route::get('/medical-articles/doctor/{doctor_id}', [DoctorController::class, 'getArticlesByDoctor']);
+
     });
 
     // Laboratory
