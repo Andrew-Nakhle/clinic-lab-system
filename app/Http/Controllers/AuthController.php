@@ -226,7 +226,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid Credentials'], 401);
         }
 
-        if (!$user->hasAnyRole(['doctor', 'admin', 'secretary', 'super_admin', 'laboratory'])) {
+        if (!$user->hasAnyRole(['patient','doctor', 'admin', 'secretary', 'super_admin', 'laboratory'])) {
             return response()->json(['message' => 'You are not authorized to access this panel.'], 403);
         }
 

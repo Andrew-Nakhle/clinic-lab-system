@@ -122,14 +122,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chat/send', [ChatController::class, 'sendMessage']);
 
     Route::middleware(['auth:sanctum'])->prefix('patient')->group(function () {
-        // جلب التحاليل المتاحة للطلب
         Route::get('/medical-tests', [PatientLabRequestController::class, 'indexAvailableTests']);
-
-        // إرسال وتأكيد طلب التحليل الجديد (المتوافق مع واجهات الحجز واختيار الموعد)
-        Route::post('/lab-requests', [PatientLabRequestController::class, 'store']);
-
-        // عرض تفاصيل طلب تحليل محدد
-        Route::get('/lab-requests/{labRequest}', [PatientLabRequestController::class, 'show']);
+        Route::get('/received', [PatientLabRequestController::class, 'receivedRequests']);
+        Route::post('/store', [PatientLabRequestController::class, 'store']);
+        Route::get('/pending', [PatientLabRequestController::class, 'pendingRequests']);
+        Route::delete('/{labRequest}', [PatientLabRequestController::class, 'destroy']);
     });
 
 });
