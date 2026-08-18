@@ -2,9 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Http\Controllers\{
-    AuthController,
+
+use App\Http\Controllers\{AuthController,
     OtpController,
+    PaymentController,
     SuperAdminController,
     AdminController,
     DoctorController,
@@ -12,8 +13,7 @@ use App\Http\Controllers\{
     LabTechnicianController,
     DoctorLabRequestController,
     ChatController,
-    PatientLabRequestController
-};
+    PatientLabRequestController,};
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'loginUser']);
@@ -25,6 +25,10 @@ Route::prefix('auth')->group(function () {
 
 Route::post('verifyOtp', [OtpController::class, 'verifyLoginOtp']);
 Route::post('resendOtp', [OtpController::class, 'resendLoginOtp']);
+//stripe
+Route::post('/stripe/webhook', [PaymentController::class, 'webhook']);
+
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/test-auth', [AuthController::class, 'testAuth']);

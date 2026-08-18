@@ -38,6 +38,7 @@ return [
     'stripe' => [
         'secret'=>env('STRIPE_SECRET'),
          'currency' => env('STRIPE_CURRENCY', 'usd'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
 ];
