@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Appointment\AppointmentStatus;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\Webhook;
@@ -33,11 +35,75 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        // لسا ما عملنا أي تعديل على قاعدة البيانات
+        $paymentIntent = $event->data->object;
+
+        switch ($event->type) {
+
+            case 'payment_intent.succeeded':
+
+
+
+                $payment = Payment::where(
+                    'stripe_payment_intent_id',
+                    $paymentIntent->id
+                )->first();
+
+                if ($payment) {
+                    $payment->markAsCompleted(
+                        $paymentIntent->id,
+                        [
+                            'stripe_event' => $event->type,
+                        ]
+                    );
+
+                    $payment->appointment->update([
+                        'status' => AppointmentStatus::Booked->value,
+                    ]);
+                }
+
+                break;
+
+            case 'payment_intent.payment_failed':
+
+                $payment = Payment::where(
+                    'stripe_payment_intent_id',
+                    $paymentIntent->id
+                )->first();
+
+                if ($payment) {
+                    $payment->markAsFailed([
+                        'stripe_event' => $event->type,
+                    ]);
+
+                    $payment->appointment->update([
+                        'status' => AppointmentStatus::Cancelled->value,
+                    ]);
+                }
+
+                break;
+
+            case 'payment_intent.canceled':
+
+                $payment = Payment::where(
+                    'stripe_payment_intent_id',
+                    $paymentIntent->id
+                )->first();
+
+                if ($payment) {
+                    $payment->markAsFailed([
+                        'stripe_event' => $event->type,
+                    ]);
+
+                    $payment->appointment->update([
+                        'status' => AppointmentStatus::Cancelled->value,
+                    ]);
+                }
+
+                break;
+        }
 
         return response()->json([
             'received' => true,
-            'event' => $event->type,
-        ]);
+        ], 200);
     }
 }

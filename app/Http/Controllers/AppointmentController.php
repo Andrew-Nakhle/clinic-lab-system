@@ -126,17 +126,18 @@ else
                 $appointment->id,
                 $appointment->patient_id
             );
+            $payment = Payment::create([
+                'appointment_id' => $appointment->id,
+                'stripe_payment_intent_id' => $paymentIntent->id,
+                'payment_method' => PaymentMethod::Online->value,
+                'provider' => PaymentProvider::Stripe->value,
+                'status' => PaymentStatus::Pending->value,
+                'amount' => $appointment->price,
+                'currency' => $currency,
+            ]); 
         }
 
-        $payment = Payment::create([
-            'appointment_id' => $appointment->id,
-            'stripe_payment_intent_id' => $paymentIntent->id,
-            'payment_method' => PaymentMethod::Online->value,
-            'provider' => PaymentProvider::Stripe->value,
-            'status' => PaymentStatus::Pending->value,
-            'amount' => $appointment->price,
-            'currency' => $currency,
-        ]);
+
         return response()->json([
             'message' => 'Appointment created. Please complete the payment.',
             'appointment' => $appointment,
