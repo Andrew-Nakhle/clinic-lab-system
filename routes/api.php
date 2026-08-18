@@ -31,7 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-
+    Route::get('/patients/', [AdminController::class, 'viewPatients'])->middleware('permission:view_patients','active');
+    Route::get('/doctors/', [AdminController::class, 'viewDoctors'])->middleware('permission:view_doctors','active');
 
     Route::get('/medical-articles/category', [DoctorController::class, 'getArticlesByCategory'])->middleware('permission:get_articles_by_category','active');
     Route::get('/medical-articles/doctor/{doctor_id}', [DoctorController::class, 'getArticlesByDoctor'])->middleware('permission:get_articles_by_doctor','active');
@@ -58,7 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('doctors')->group(function () {
             Route::post('/register', [AuthController::class, 'registerDoctor']);
             Route::get('/viewDoctorsBySection', [AdminController::class, 'ViewDoctorsBySection']);
-            Route::get('/', [AdminController::class, 'viewDoctors']);
+
             Route::get('/{id}', [AdminController::class, 'viewDoctor']);
             Route::patch('/{id}/status', [AdminController::class, 'updateDoctor']);
             Route::delete('/{id}', [AdminController::class, 'deleteDoctor']);
@@ -73,7 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         Route::prefix('patients')->group(function () {
-            Route::get('/', [AdminController::class, 'viewPatients']);
+
             Route::get('/{id}', [AdminController::class, 'viewPatient']);
             Route::patch('/{id}', [AdminController::class, 'updatePatient']);
             Route::delete('/{id}', [AdminController::class, 'deletePatient']);
