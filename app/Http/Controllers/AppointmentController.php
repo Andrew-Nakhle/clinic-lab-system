@@ -17,6 +17,7 @@ use App\Models\DoctorProfile;
 use App\Models\Payment;
 use App\Services\PaymentService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 
 class AppointmentController extends Controller
@@ -69,81 +70,96 @@ class AppointmentController extends Controller
 
         $availableSlots = $this->getAvailableSlots(
             $doctor,
-            $date,   $validated['appointment_type']
+            $date, $validated['appointment_type']
         );
 
         if (!$availableSlots->contains($start_at->format('H:i'))) {
             return response()->json(['message' => 'Appointment not available'], 409);
         }
-if($validated['appointment_type']==AppointmentType::Clinic->value){
-    $validated['price'] = $doctor->consultation_fee;
-}
-else
-    $validated['price'] = $doctor->home_visit_fee;
+        if ($validated['appointment_type'] == AppointmentType::Clinic->value) {
+            $validated['price'] = $doctor->consultation_fee;
+        } else
+            $validated['price'] = $doctor->home_visit_fee;
         $validated['made_by'] = AppointmentMadeBy::Patient->value;
         $validated['end_at'] = $end_at;
         $validated['patient_id'] = auth()->user()->patient->id;
 
         $paymentMethod = $validated['payment_method'];
+        return DB::transaction(function () use (
+            $doctor,
+            $validated,
+            $start_at,
+            $end_at,
+            $paymentMethod,
+            $paymentService
+        ) {
 
-        if ($paymentMethod === PaymentMethod::Online->value) {
-            $status = AppointmentStatus::PendingPayment->value;
-        } else {
-            $status = AppointmentStatus::Booked->value;
-        }
+            if ($paymentMethod === PaymentMethod::Online->value) {
+                $status = AppointmentStatus::PendingPayment->value;
+            } else {
+                $status = AppointmentStatus::Booked->value;
+            }
 
-        $appointment = Appointment::create([
-            'doctor_id' => $doctor->id,
-            'patient_id' => $validated['patient_id'],
-            'start_at' => $start_at,
-            'end_at' => $end_at,
-            'appointment_type' => $validated['appointment_type'],
-            'made_by' => AppointmentMadeBy::Patient->value,
-            'price' =>  $validated['price'],
-            'status' => $status,
-        ]);
-//لعمليات الكاش هي
-        if ($paymentMethod === PaymentMethod::Cash->value) {
-
-            $payment = Payment::create([
-                'appointment_id' => $appointment->id,
-                'payment_method' => PaymentMethod::Cash->value,
-                'provider' => PaymentProvider::Cash->value,
-                'status' => PaymentStatus::Pending->value,
-                'amount' => $appointment->price,
-                'currency' => config('services.stripe.currency', 'usd'),
+            $appointment = Appointment::create([
+                'doctor_id' => $doctor->id,
+                'patient_id' => $validated['patient_id'],
+                'start_at' => $start_at,
+                'end_at' => $end_at,
+                'appointment_type' => $validated['appointment_type'],
+                'made_by' => AppointmentMadeBy::Patient->value,
+                'price' => $validated['price'],
+                'status' => $status,
             ]);
 
-        }
-//لعمليات ال online
-        if ($paymentMethod === PaymentMethod::Online->value) {
+            // Cash
+            if ($paymentMethod === PaymentMethod::Cash->value) {
 
-            $currency = config('services.stripe.currency', 'usd');
+                $payment = Payment::create([
+                    'appointment_id' => $appointment->id,
+                    'payment_method' => PaymentMethod::Cash->value,
+                    'provider' => PaymentProvider::Cash->value,
+                    'status' => PaymentStatus::Pending->value,
+                    'amount' => $appointment->price,
+                    'currency' => config('services.stripe.currency', 'usd'),
+                ]);
 
-            $paymentIntent = $paymentService->createPaymentIntent(
-                $appointment->price,
-                $currency,
-                $appointment->id,
-                $appointment->patient_id
-            );
-            $payment = Payment::create([
-                'appointment_id' => $appointment->id,
-                'stripe_payment_intent_id' => $paymentIntent->id,
-                'payment_method' => PaymentMethod::Online->value,
-                'provider' => PaymentProvider::Stripe->value,
-                'status' => PaymentStatus::Pending->value,
-                'amount' => $appointment->price,
-                'currency' => $currency,
-            ]); 
-        }
+                return response()->json([
+                    'message' => 'Appointment created successfully.',
+                    'appointment' => $appointment,
+                    'payment' => $payment,
+                ], 201);
+            }
 
+            // Online
+            if ($paymentMethod === PaymentMethod::Online->value) {
 
-        return response()->json([
-            'message' => 'Appointment created. Please complete the payment.',
-            'appointment' => $appointment,
-            'payment' => $payment,
-            'client_secret' => $paymentIntent->client_secret,
-        ], 201);
+                $currency = config('services.stripe.currency', 'usd');
+
+                $paymentIntent = $paymentService->createPaymentIntent(
+                    $appointment->price,
+                    $currency,
+                    $appointment->id,
+                    $appointment->patient_id
+                );
+
+                $payment = Payment::create([
+                    'appointment_id' => $appointment->id,
+                    'stripe_payment_intent_id' => $paymentIntent->id,
+                    'payment_method' => PaymentMethod::Online->value,
+                    'provider' => PaymentProvider::Stripe->value,
+                    'status' => PaymentStatus::Pending->value,
+                    'amount' => $appointment->price,
+                    'currency' => $currency,
+                ]);
+
+                return response()->json([
+                    'message' => 'Appointment created. Please complete the payment.',
+                    'appointment' => $appointment,
+                    'payment' => $payment,
+                    'client_secret' => $paymentIntent->client_secret,
+                ], 201);
+            }
+        });
     }
 
     public function bookBySecretary(BookAppointmentBySecretaryRequest $request)
