@@ -35,10 +35,14 @@ class AppointmentController extends Controller
         foreach ($schedules as $schedule) {
             $start_time = Carbon::parse($schedule->start_time);
             $end_time = Carbon::parse($schedule->end_time);
+            //هي كرمال التقسم حسب الوقت يا 15 يا ساعة حسب نوع الموعد
+            $slotDuration = $appointment_type === AppointmentType::Home->value
+                ? 60
+                : 15;
 
-            while ($start_time->copy()->addMinutes(15)->lte($end_time)) {
+            while ($start_time->copy()->addMinutes($slotDuration)->lte($end_time)) {
                 $slots[] = $start_time->format('H:i');
-                $start_time->addMinutes(15);
+                $start_time->addMinutes($slotDuration);
             }
         }
         $appointments = $doctor->doctorAppointments()->whereDate('start_at', $date)->
@@ -65,7 +69,12 @@ class AppointmentController extends Controller
         $doctor = DoctorProfile::find($validated['doctor_id']);
 
         $start_at = Carbon::parse($validated['start_at']);
-        $end_at = $start_at->copy()->addMinutes(15);
+        $duration = $validated['appointment_type'] === AppointmentType::Home->value
+            ? 60
+            : 15;
+
+        $end_at = $start_at->copy()->addMinutes($duration);
+
         $date = $start_at->toDateString();//لحول الوقت لتاريخ ووقت استعملو مع تابع getAvailableSlots
 
         $availableSlots = $this->getAvailableSlots(
@@ -100,6 +109,25 @@ class AppointmentController extends Controller
                 } else {
                     $status = AppointmentStatus::Booked->value;
                 }
+
+
+                $patient = auth()->user()->patient;
+//هاد عملتو كرمال امنع المريض يحجز موعدين عند دكتورين بوقتين مختلفين
+                $hasOverlappingAppointment = Appointment::where('patient_id', $patient->id)
+                    ->whereIn('status', [AppointmentStatus::Booked->value,
+                        AppointmentStatus::PendingPayment->value,])
+                    ->where(function ($query) use ($start_at, $end_at) {
+                        $query->where('start_at', '<', $end_at)
+                            ->where('end_at', '>', $start_at);
+                    })
+                    ->exists();
+
+                if ($hasOverlappingAppointment) {
+                    return response()->json([
+                        'message' => 'You already have an appointment at this time.'
+                    ], 409);
+                }
+
 
                 $appointment = Appointment::create([
                     'doctor_id' => $doctor->id,
@@ -181,7 +209,11 @@ class AppointmentController extends Controller
         $doctor = DoctorProfile::find($validated['doctor_id']);
 
         $start_at = Carbon::parse($validated['start_at']);
-        $end_at = $start_at->copy()->addMinutes(15);
+        $duration = $validated['appointment_type'] === AppointmentType::Home->value
+            ? 60
+            : 15;
+
+        $end_at = $start_at->copy()->addMinutes($duration);
 
         $date = $start_at->toDateString();
 
@@ -194,6 +226,24 @@ class AppointmentController extends Controller
         if (!$availableSlots->contains($start_at->format('H:i'))) {
             return response()->json([
                 'message' => 'Appointment not available'
+            ], 409);
+        }
+
+// اذا في موعد متداخل يا برنس Andrew was hereeeeeee
+        $hasOverlappingAppointment = Appointment::where('patient_id', $validated['patient_id'])
+            ->whereIn('status', [
+                AppointmentStatus::Booked->value,
+                AppointmentStatus::PendingPayment->value,
+            ])
+            ->where(function ($query) use ($start_at, $end_at) {
+                $query->where('start_at', '<', $end_at)
+                    ->where('end_at', '>', $start_at);
+            })
+            ->exists();
+
+        if ($hasOverlappingAppointment) {
+            return response()->json([
+                'message' => 'This patient already has an appointment at this time.'
             ], 409);
         }
 
