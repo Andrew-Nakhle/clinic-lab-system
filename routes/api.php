@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\{AuthController,
     OtpController,
     PaymentController,
+    SecretaryController,
     SuperAdminController,
     AdminController,
     DoctorController,
@@ -13,7 +14,7 @@ use App\Http\Controllers\{AuthController,
     LabTechnicianController,
     DoctorLabRequestController,
     ChatController,
-    PatientLabRequestController,};
+    PatientLabRequestController};
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'loginUser']);
@@ -139,6 +140,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pending', [PatientLabRequestController::class, 'pendingRequests']);
         Route::delete('/{labRequest}', [PatientLabRequestController::class, 'destroy']);
     });
+    //secretary
+
+
+    Route::middleware(['role:secretary', 'active'])->prefix('secretary')->group(function () {
+
+        Route::post('/appointments/{appointment}/attend', [AppointmentController::class, 'markAsAttended']);
+        Route::post('/appointments/{appointment}/no-show', [AppointmentController::class, 'markAsNoShow']);
+        Route::get('/search/patient',[SecretaryController::class, 'searchPatient']);
+        Route::post('/appointment',[AppointmentController::class, 'bookBySecretary']);
+        });
 
 });
 

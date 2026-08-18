@@ -12,7 +12,7 @@ class LaboratoryProfileResource extends JsonResource
         return [
             'id'             => $this->id,
             'license_number' => $this->license_number,
-            'image'          => $this->image ? asset('storage/' . $this->image) : null,
+            'image'          => $this->image ? url('storage/' . $this->image) : null,
 
             // بيانات المستخدم المرتبط (عبر علاقة user)
             'user' => [

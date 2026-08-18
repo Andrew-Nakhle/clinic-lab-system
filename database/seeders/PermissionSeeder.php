@@ -58,6 +58,8 @@ class PermissionSeeder extends Seeder
             ///////////////////Secretaty/////////////
             'search_patient',
             'create_appointment_by_secretary',//its mean make an appointment for a patient
+            'no_show',
+            'attend',
 
         ];
 

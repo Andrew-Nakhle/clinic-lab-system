@@ -15,6 +15,7 @@ return new class extends Migration
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
 
+
             // ربط العلاقات بالجداول المخصصة (doctor_profiles, patient_profiles, secretary_profiles)
             $table->foreignId('doctor_id')->constrained('doctor_profiles')->onDelete('cascade');
             $table->foreignId('patient_id')->constrained('patient_profiles')->onDelete('cascade');
@@ -28,6 +29,12 @@ return new class extends Migration
 //            $table->dateTime('appointment_date')->nullable(); // للحفاظ على التوافق إذا كان مستخدماً في مكان آخر
             $table->dateTime('start_at');
             $table->dateTime('end_at');
+
+
+            $table->unique(
+                ['doctor_id', 'start_at'],
+                'appointments_doctor_start_at_unique'
+            );
 
             // السعر بصيغة decimal الصحيحة
             $table->decimal('price', 8, 2);

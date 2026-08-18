@@ -107,6 +107,18 @@ $patientRole=Role::where('name', 'patient')->first();
             ]);
         }
 
+        //secretary
+        $secretaryRole=Role::where('name', 'secretary')->first();
+        if ($secretaryRole) {
+            $secretaryRole->givePermissionTo([
+                'create_appointment_by_secretary',
+                'search_patient',
+                'no_show',
+                'attend',
+
+            ]);
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Admin 1

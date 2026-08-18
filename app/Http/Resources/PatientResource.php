@@ -20,7 +20,7 @@ class PatientResource extends JsonResource
             'tall'=>$this->tall,
             'section_id'=>$this->section_id,
             'id_card'=>$this->id_card,
-            'profile_image_url' => $this->profile_image ? asset('storage/' . $this->profile_image) : null,
+            'profile_image_url' => $this->profile_image ? url('storage/' . $this->profile_image) : null,
             'user' => $this->whenLoaded('user'),
         ];
     }

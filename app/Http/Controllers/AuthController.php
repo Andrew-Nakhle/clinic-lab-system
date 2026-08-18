@@ -159,6 +159,10 @@ class AuthController extends Controller
         $validated = $request->validated();
         $validated['password'] = Hash::make($validated['password']);
 
+        $validated['profile_image'] = $request->hasFile('profile_image')
+            ? $request->file('profile_image')->store('profile_images', 'public')
+            : null;
+
         $user = User::create([
             'first_name' => $validated['first_name'],
             'last_name'  => $validated['last_name'],
@@ -167,12 +171,14 @@ class AuthController extends Controller
             'password'   => $validated['password'],
             'gender'     => $validated['gender'],
             'birth_date' => $validated['birth_date'],
+            'profile_image'    => $validated['profile_image']?? null,
         ]);
 
         $user->assignRole('secretary');
         $user->secretary()->create([
             'user_id'    => $user->id,
             'section_id' => $validated['section_id'],
+            'image' => $validated['profile_image']?? null,
         ]);
 
         $user->load('secretary');

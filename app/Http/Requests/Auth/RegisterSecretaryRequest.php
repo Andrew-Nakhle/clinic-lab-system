@@ -31,6 +31,7 @@ class RegisterSecretaryRequest extends FormRequest
             'gender'=>['required','string','in:male,female,other'],
             'section_id' => ['required','exists:sections,id' ],
             'birth_date'=>['required','date'],
+            'profile_image'=>['required','image','mimes:jpeg,jpg,png'],
         ];
     }
 }

@@ -12,7 +12,7 @@ class SecretaryResource extends JsonResource
     {
         return [
 
-            'profile_image_url' => $this->profile_image ? asset('storage/' . $this->profile_image) : null,
+            'profile_image_url' => $this->profile_image ? url('storage/' . $this->profile_image) : null,
              'user' => $this->whenLoaded('user'),
               ];
     }

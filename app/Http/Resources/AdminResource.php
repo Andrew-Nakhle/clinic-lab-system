@@ -18,7 +18,7 @@ class AdminResource extends JsonResource
             'id' => $this->id,
             'first_name' => $this->first_name,
             'last_name'  => $this->last_name,
-            'avatar_url' => $this->image_profile ? asset('storage/' . $this->image_profile) : null,
+            'avatar_url' => $this->image_profile ? url('storage/' . $this->image_profile) : null,
             'created_at' => $this->created_at->toIso8601String(),
         ];
     }
