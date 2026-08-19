@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\{AuthController,
     NotificationController,
     OtpController,
+    PatientController,
     PaymentController,
     SecretaryController,
     SuperAdminController,
@@ -128,6 +129,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/appointments/available-slots', [AppointmentController::class, 'availableSlots']);
         Route::post('/updatePatientProfile', [AuthController::class, 'updatePatientProfile']);
         Route::put('/updatePatientProfile', [AuthController::class, 'updatePatientProfile']);
+        Route::get('/appointments/today', [patientController::class, 'todayPatientAppointments']);
+        Route::get('/appointments/upcoming', [patientController::class, 'upcomingPatientAppointments']);
+        Route::get('/appointments/previous', [patientController::class, 'previousPatientAppointments']);
     });
 
     // Chat Routes

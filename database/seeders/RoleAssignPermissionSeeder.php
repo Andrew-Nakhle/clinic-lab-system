@@ -103,6 +103,9 @@ $patientRole=Role::where('name', 'patient')->first();
                 'get_articles_by_category',
                 'get_articles_by_doctor',
                 'patient_appointments',
+                'previous_patient_appointments',
+                'upcoming_patient_appointments',
+                'today_patient_appointments',
 
             ]);
         }
