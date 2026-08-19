@@ -29,11 +29,6 @@ class UpdateMedicalArticleRequest extends FormRequest
             'title' => ['sometimes', 'string'],
             'content' => ['sometimes', 'string'],
 
-                'category' => [
-                'sometimes',
-                new Enum(MedicalArticleCategory::class),
-            ],
-
             'image' => [
                 'sometimes',
                 'image',

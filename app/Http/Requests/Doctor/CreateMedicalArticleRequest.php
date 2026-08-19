@@ -27,7 +27,6 @@ class CreateMedicalArticleRequest extends FormRequest
         return [
             'title' => ['required', 'string'],
             'content' => ['required', 'string'],
-            'category' => ['required', new Enum(MedicalArticleCategory::class)],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png'],
         ];
     }

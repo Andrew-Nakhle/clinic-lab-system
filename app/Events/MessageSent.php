@@ -24,4 +24,8 @@ class MessageSent implements ShouldBroadcast
         // تم تغيير PrivateChannel إلى Channel (عام) للتمكن من الاختبار
         return new Channel('chat.' . $this->message->receiver_id);
     }
+    public function broadcastAs(): string
+    {
+        return 'message.sent';
+    }
 }

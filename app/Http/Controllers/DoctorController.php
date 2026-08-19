@@ -263,16 +263,23 @@ $validated = $request->validated();
             ], 404);
         }
 
+        $doctor = $user->doctor;
+
+        if (!$doctor->section) {
+            return response()->json([
+                'message' => 'Doctor section not found'
+            ], 404);
+        }
+
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')
                 ->store('article_images', 'public');
         }
 
-        $article = $user->doctor->articles()->create([
-         //نضافت تلقائيا لان عملت عملية الاضافة من الدكتور    'doctor_id'=> $user->doctor->id,
+        $article = $doctor->articles()->create([
             'title' => $validated['title'],
             'content' => $validated['content'],
-            'category' => $validated['category'],
+            'category' => $doctor->section->name,
             'image' => $validated['image'] ?? null,
         ]);
 
@@ -281,7 +288,8 @@ $validated = $request->validated();
             'article' => new ArticleResource($article)
         ], 201);
     }
-    public function updateArticle(UpdateMedicalArticleRequest $request, $id) {
+    public function updateArticle(UpdateMedicalArticleRequest $request, $id)
+    {
         $validated = $request->validated();
 
         $user = auth()->user();
@@ -292,7 +300,15 @@ $validated = $request->validated();
             ], 404);
         }
 
-        $article = $user->doctor->articles()->find($id);
+        $doctor = $user->doctor;
+
+        if (!$doctor->section) {
+            return response()->json([
+                'message' => 'Doctor section not found'
+            ], 404);
+        }
+
+        $article = $doctor->articles()->find($id);
 
         if (!$article) {
             return response()->json([
@@ -308,13 +324,13 @@ $validated = $request->validated();
         $article->update([
             'title' => $validated['title'] ?? $article->title,
             'content' => $validated['content'] ?? $article->content,
-            'category' => $validated['category'] ?? $article->category,
+            'category' => $doctor->section->name,
             'image' => $validated['image'] ?? $article->image,
         ]);
 
         return response()->json([
             'message' => 'Article updated successfully',
-            'article' =>  new ArticleResource($article->fresh()),
+            'article' => new ArticleResource($article->fresh()),
         ]);
     }
     public function deleteArticle($id)
