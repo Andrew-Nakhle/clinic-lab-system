@@ -356,6 +356,36 @@ $patientRole=Role::where('name', 'patient')->first();
         ]);
 
         /*
+        |--------------------------------------------------------------------------
+        | Home Visit Appointments - Patient 1
+        |--------------------------------------------------------------------------
+        */
+
+
+        $homeAppointment1 = Appointment::create([
+            'doctor_id' => $doctor1->id,
+            'patient_id' => $patientProfile1->id,
+            'start_at' => '2026-08-20 12:00:00',
+            'end_at' => '2026-08-20 13:00:00',
+            'price' => $doctor1->home_visit_fee,
+            'made_by' => 'patient',
+            'status' => 'booked',
+            'appointment_type' => 'home',
+            'address' => 'Damascus, Mazzeh',
+        ]);
+
+        $homeAppointment2 = Appointment::create([
+            'doctor_id' => $doctor2->id,
+            'patient_id' => $patientProfile1->id,
+            'start_at' => '2026-08-22 13:00:00',
+            'end_at' => '2026-08-22 14:00:00',
+            'price' => $doctor2->home_visit_fee,
+            'made_by' => 'secretary',
+            'status' => 'completed',
+            'appointment_type' => 'home',
+            'address' => 'Damascus, Kafar Souseh',
+        ]);
+        /*
 |--------------------------------------------------------------------------
 | Appointments - Patient 2 with Doctor 1
 |--------------------------------------------------------------------------
@@ -381,6 +411,38 @@ $patientRole=Role::where('name', 'patient')->first();
             'made_by' => 'patient',
             'status' => 'completed',
             'appointment_type' => 'clinic',
+        ]);
+
+
+
+        /*
+|--------------------------------------------------------------------------
+| Home Visit Appointments - Patient 2
+|--------------------------------------------------------------------------
+*/
+
+        $homeAppointment3 = Appointment::create([
+            'doctor_id' => $doctor2->id,
+            'patient_id' => $patientProfile2->id,
+            'start_at' => '2026-08-23 12:00:00',
+            'end_at' => '2026-08-23 13:00:00',
+            'price' => $doctor2->home_visit_fee,
+            'made_by' => 'patient',
+            'status' => 'booked',
+            'appointment_type' => 'home',
+            'address' => 'Damascus, Baramkeh',
+        ]);
+
+        $homeAppointment4 = Appointment::create([
+            'doctor_id' => $doctor1->id,
+            'patient_id' => $patientProfile2->id,
+            'start_at' => '2026-08-24 13:00:00',
+            'end_at' => '2026-08-24 14:00:00',
+            'price' => $doctor1->home_visit_fee,
+            'made_by' => 'patient',
+            'status' => 'booked',
+            'appointment_type' => 'home',
+            'address' => 'Damascus, Mezzeh',
         ]);
 
         /*

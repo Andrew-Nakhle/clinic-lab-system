@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\{AuthController,
+use App\Http\Controllers\{AiClinicController,
+    AuthController,
     NotificationController,
     OtpController,
     PatientController,
@@ -141,6 +142,9 @@ Route::middleware('auth:sanctum')->group(function () {
     //noftification
 Route::post(  '/notifications/test', [NotificationController::class, 'test']);
 
+//Ai
+    Route::post('/ask-ai', [AiClinicController::class, 'ask']);
+
     Route::middleware(['auth:sanctum'])->prefix('patient')->group(function () {
         Route::get('/medical-tests', [PatientLabRequestController::class, 'indexAvailableTests']);
         Route::get('/received', [PatientLabRequestController::class, 'receivedRequests']);
@@ -148,9 +152,9 @@ Route::post(  '/notifications/test', [NotificationController::class, 'test']);
         Route::get('/pending', [PatientLabRequestController::class, 'pendingRequests']);
         Route::delete('/{labRequest}', [PatientLabRequestController::class, 'destroy']);
     });
+
+
     //secretary
-
-
     Route::middleware(['role:secretary', 'active'])->prefix('secretary')->group(function () {
 
         Route::post('/appointments/{appointment}/attend', [AppointmentController::class, 'markAsAttended']);
