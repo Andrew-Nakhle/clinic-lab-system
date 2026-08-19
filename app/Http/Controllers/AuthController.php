@@ -283,9 +283,9 @@ class AuthController extends Controller
         return response()->json(['message' => 'Laboratory Registered Successfully', 'user' => $user], 201);
     }
 
-    public function logout(Request $request)
+    public function logout()
     {
-        $request->user()->currentAccessToken()->delete();
+        auth()->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logout Successful'], 200);
     }
 

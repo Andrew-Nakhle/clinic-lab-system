@@ -22,7 +22,7 @@ Route::prefix('auth')->group(function () {
     Route::post('login/manager', [AuthController::class, 'loginManager']);
     Route::post('register/patient', [AuthController::class, 'registerPatient']);
     Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth:sanctum');
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
 Route::post('verifyOtp', [OtpController::class, 'verifyLoginOtp']);
