@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\{AuthController,
+    NotificationController,
     OtpController,
     PaymentController,
     SecretaryController,
@@ -132,6 +133,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Chat Routes
     Route::get('/chat/{receiverId}', [ChatController::class, 'index']);
     Route::post('/chat/send', [ChatController::class, 'sendMessage']);
+
+    //noftification
+Route::post(  '/notifications/test', [NotificationController::class, 'test']);
 
     Route::middleware(['auth:sanctum'])->prefix('patient')->group(function () {
         Route::get('/medical-tests', [PatientLabRequestController::class, 'indexAvailableTests']);

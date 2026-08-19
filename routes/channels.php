@@ -11,3 +11,6 @@ Broadcast::channel('chat.{receiverId}', function ($user, $receiverId) {
     // أو إذا كان هو الشخص المستقبِل لها.
     return (int) $user->id === (int) $receiverId;
 });
+Broadcast::channel('notifications.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
