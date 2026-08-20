@@ -90,22 +90,35 @@ class DoctorController extends Controller
         ]);
     }
 
-    public function todayAppointments(GetAppointmentsRequest $request)
+    public function todayPatientAppointments(GetAppointmentsRequest $request)
     {
+        $doctor = auth()->user()->doctor;
+
+        if (!$doctor) {
+            return response()->json([
+                'message' => 'Doctor profile not found'
+            ], 404);
+        }
+
         $query = Appointment::query();
+
         $query->with('patient.user')
-            ->where('doctor_id', auth()->user()->doctor->id);
+            ->where('doctor_id', $doctor->id);
 
         if ($request->input('appointment_type')) {
             $query->where('appointment_type', $request->input('appointment_type'));
         }
 
-        $appointments = $query
-            ->whereDate('start_at', today())
-            ->orderBy('start_at')
-            ->get();
+        $appointments = $query->whereDate('start_at', today())->orderBy('start_at')->get();
 
-        return response()->json(['appointments' => AppointmentResource::collection($appointments)]);
+        $completedCount = $appointments->where('status', AppointmentStatus::Completed)->count();
+        $pendingCount = $appointments->where('status', AppointmentStatus::Booked)->count();
+
+        return response()->json([
+            'completed_count' => $completedCount,
+            'pending_count' => $pendingCount,
+            'appointments' => AppointmentResource::collection($appointments),
+        ]);
     }
 
     public function upcomingAppointments(GetAppointmentsRequest $request)
@@ -415,6 +428,6 @@ $validated = $request->validated();
             'doctor_id' => $doctor->id,
             'areas' => $areas,
         ]);
-    }   
+    }
 
 }

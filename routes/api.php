@@ -104,7 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['role:doctor', 'active'])->prefix('doctor')->group(function () {
         Route::post('/profile', [DoctorController::class, 'updateProfile']);
         Route::put('/profile', [DoctorController::class, 'updateProfile']);
-        Route::get('/viewAppointments/today', [DoctorController::class, 'todayAppointments']);
+        Route::get('/viewAppointments/today', [DoctorController::class, 'todayPatientAppointments']);
         Route::get('/viewAppointments/previous', [DoctorController::class, 'previousAppointments']);
         Route::get('/viewAppointments/upcoming', [DoctorController::class, 'upcomingAppointments']);
         Route::get('/medicalRecord', [DoctorController::class, 'getMedicalRecord']);
