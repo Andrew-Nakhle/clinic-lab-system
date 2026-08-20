@@ -51,12 +51,12 @@ class RoleAssignPermissionSeeder extends Seeder
             ['email' => 'super@admin.com'],
             [
                 'first_name' => 'Super',
-                'last_name' => 'Admin',
-                'phone' => '0000000000', // <-- تم تصحيح اسم العمود
-                'password' => bcrypt('abc123'),
-                'gender' => 'male',
+                'last_name'  => 'Admin',
+                'phone'      => '0000000000', // <-- تم تصحيح اسم العمود
+                'password'   => bcrypt('abc123'),
+                'gender'     => 'male',
                 'birth_date' => '1990-01-01',
-                'status' => UserStatus::Active ?? 'active'
+                'status'     => UserStatus::Active ?? 'active'
             ]
         ); // تم إضافة الفاصلة المنقوطة هنا
 
@@ -100,7 +100,7 @@ class RoleAssignPermissionSeeder extends Seeder
         }
 
         ////patient
-        $patientRole = Role::where('name', 'patient')->first();
+$patientRole=Role::where('name', 'patient')->first();
         if ($patientRole) {
             $patientRole->givePermissionTo([
                 'create_appointment_by_patient',
@@ -118,7 +118,7 @@ class RoleAssignPermissionSeeder extends Seeder
         }
 
         //secretary
-        $secretaryRole = Role::where('name', 'secretary')->first();
+        $secretaryRole=Role::where('name', 'secretary')->first();
         if ($secretaryRole) {
             $secretaryRole->givePermissionTo([
                 'create_appointment_by_secretary',
@@ -227,13 +227,13 @@ class RoleAssignPermissionSeeder extends Seeder
         */
 
         $doctor1Schedules = [
-            ['day_of_week' => 'Sunday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
-            ['day_of_week' => 'Monday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
-            ['day_of_week' => 'Tuesday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Sunday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Monday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Tuesday',   'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
             ['day_of_week' => 'Wednesday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
 
-            ['day_of_week' => 'Thursday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
-            ['day_of_week' => 'Saturday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Thursday',  'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
+            ['day_of_week' => 'Saturday',  'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
         ];
 
         foreach ($doctor1Schedules as $schedule) {
@@ -248,13 +248,13 @@ class RoleAssignPermissionSeeder extends Seeder
         */
 
         $doctor2Schedules = [
-            ['day_of_week' => 'Sunday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
-            ['day_of_week' => 'Monday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
-            ['day_of_week' => 'Tuesday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Sunday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Monday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
+            ['day_of_week' => 'Tuesday',    'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
             ['day_of_week' => 'Wednesday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'clinic'],
 
-            ['day_of_week' => 'Thursday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
-            ['day_of_week' => 'Saturday', 'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
+            ['day_of_week' => 'Thursday',  'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
+            ['day_of_week' => 'Saturday',  'start_time' => '12:00', 'end_time' => '16:00', 'schedule_type' => 'home'],
         ];
 
         foreach ($doctor2Schedules as $schedule) {
@@ -324,10 +324,10 @@ class RoleAssignPermissionSeeder extends Seeder
         ]);
 
         /*
-       |--------------------------------------------------------------------------
-       | Appointments - Patient 1 with Doctor 1
-       |--------------------------------------------------------------------------
-       */
+|--------------------------------------------------------------------------
+| Appointments - Patient 1 with Doctor 1
+|--------------------------------------------------------------------------
+*/
 
         $appointment1 = Appointment::create([
             'doctor_id' => $doctor1->id,
@@ -368,6 +368,7 @@ class RoleAssignPermissionSeeder extends Seeder
         |--------------------------------------------------------------------------
         */
 
+
         $homeAppointment1 = Appointment::create([
             'doctor_id' => $doctor1->id,
             'patient_id' => $patientProfile1->id,
@@ -391,16 +392,15 @@ class RoleAssignPermissionSeeder extends Seeder
             'appointment_type' => 'home',
             'address' => 'Damascus, Kafar Souseh',
         ]);
-
         /*
-        |--------------------------------------------------------------------------
-        | Appointments - Patient 2 with Doctor 1
-        |--------------------------------------------------------------------------
-        */
+|--------------------------------------------------------------------------
+| Appointments - Patient 2 with Doctor 1
+|--------------------------------------------------------------------------
+*/
 
         $appointment4 = Appointment::create([
             'doctor_id' => $doctor1->id,
-            'patient_id' => $patientProfile2->id,
+            'patient_id' =>$patientProfile2->id,
             'start_at' => '2026-08-18 15:00:00',
             'end_at' => '2026-08-18 15:15:00',
             'price' => $doctor1->consultation_fee,
@@ -417,13 +417,16 @@ class RoleAssignPermissionSeeder extends Seeder
             'price' => $doctor1->consultation_fee,
             'made_by' => 'patient',
             'status' => 'completed',
+            'appointment_type' => 'clinic',
         ]);
 
+
+
         /*
-        |--------------------------------------------------------------------------
-        | Home Visit Appointments - Patient 2
-        |--------------------------------------------------------------------------
-        */
+|--------------------------------------------------------------------------
+| Home Visit Appointments - Patient 2
+|--------------------------------------------------------------------------
+*/
 
         $homeAppointment3 = Appointment::create([
             'doctor_id' => $doctor2->id,
@@ -450,36 +453,33 @@ class RoleAssignPermissionSeeder extends Seeder
         ]);
 
         /*
-        |--------------------------------------------------------------------------
-        | Reports - Patient 1 / Doctor 1
-        |--------------------------------------------------------------------------
-        */
+|--------------------------------------------------------------------------
+| Reports - Patient 1 / Doctor 1
+|--------------------------------------------------------------------------
+*/
 
-        $report1 = Report::create([
-            'patient_id' => $patientProfile1->id,
+        $report1=  Report::create([
+            'patient_id' =>  $patientProfile1->id,
             'doctor_id' => $doctor1->id,
             'appointment_id' => $appointment1->id,
             'report' => 'Patient complains of mild chest discomfort. Recommended rest and monitoring of symptoms.',
         ]);
-
         $report1->images()->createMany([
             ['image' => 'id_cards/OmVfSdVCkIp0UPDM2AbfZ4zZ6zkwKhElvyww7hz.jpg'],
             ['image' => 'id_cards/OmVfSdVCkIp0UPDM2AbfZ4zZ6zkwKhElvyww7hz.jpg'],
         ]);
 
-        $report2 = Report::create([
-            'patient_id' => $patientProfile1->id,
+        $report2=   Report::create([
+            'patient_id' =>  $patientProfile1->id,
             'doctor_id' => $doctor1->id,
             'appointment_id' => $appointment2->id,
             'report' => 'Patient returned for follow-up. Symptoms have improved compared to the previous visit.',
         ]);
-
         $report2->images()->create([
             'image' => 'id_cards/OmVfSdVCkIp0UPDM2AbfZ4zZ6zkwKhElvyww7hz.jpg',
         ]);
-
         Report::create([
-            'patient_id' => $patientProfile1->id,
+            'patient_id' =>  $patientProfile1->id,
             'doctor_id' => $doctor1->id,
             'appointment_id' => $appointment3->id,
             'report' => 'Patient is in stable condition. No further treatment is required at this time.',
@@ -496,30 +496,35 @@ class RoleAssignPermissionSeeder extends Seeder
         |--------------------------------------------------------------------------
         */
 
-// 1. التأكد من وجود دور الـ lab_technician (أو إنشاءه إذا لزم الأمر)
+        // 1. التأكد من وجود دور الـ lab_technician (أو إنشاءه إذا لزم الأمر)
         $labRole = Role::firstOrCreate(['name' => 'lab_technician']);
 
-// 2. إنشاء مستخدم جديد للمختبر
+        // 2. إنشاء مستخدم جديد للمختبر
         $labUser = User::create([
-            'first_name' => 'Laboratory',
-            'last_name' => 'Technician',
-            'phone' => '0999000006',
-            'email' => 'lab@example.com',
-            'password' => Hash::make('password'),
-            'gender' => 'male',
-            'birth_date' => '1992-03-10',
+            'first_name'    => 'Laboratory',
+            'last_name'     => 'Technician',
+            'phone'         => '0999000006',
+            'email'         => 'lab@example.com',
+            'password'      => Hash::make('password'),
+            'gender'        => 'male',
+            'birth_date'    => '1992-03-10',
             'profile_image' => 'profile_images/2JYc3c568bFu1L3IduttA0woAUyOes2Ol7QEPzko.jpg',
-            'status' => 'active',
+            'status'        => 'active',
         ]);
 
-// 3. إسناد الدور للمستخدم
-        $labUser->assignRole('laboratory');
+        // 3. إسناد الدور للمستخدم
+        $labUser->assignRole('laboratory'); // أو المعرّف الخاص بالدور حسب نظامك
 
-// 4. إنشاء ملف المختبر
+        // 4. إنشاء ملف المختبر (Laboratory Profile) باستخدام موديل LaboratoryProfile
         \App\Models\LaboratoryProfile::create([
-            'user_id' => $labUser->id,
-            'section_id' => $defaultSectionId,
+            'user_id'        => $labUser->id,
+            'section_id'     => $defaultSectionId, // القسم الافتراضي الذي تم جلبه في بداية الـ Seeder
             'license_number' => 'LAB-LIC-10045',
-            'image' => 'laboratory_images/sample_lab.jpg',
+            'image'          => 'laboratory_images/sample_lab.jpg',
         ]);
-    }}
+    }
+
+}
+
+
+
