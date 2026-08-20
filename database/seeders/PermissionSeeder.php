@@ -65,6 +65,10 @@ class PermissionSeeder extends Seeder
             'today_patient_appointments',
             'cancel_appointment',
             'doctor_service_areas',
+            'get_medical_access_code',
+            'regenerate_medical_access_code',
+            'prescriptions_pdf',
+            'my_medical_record',
 
             ///////////////////Secretaty/////////////
             'search_patient',

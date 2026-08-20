@@ -140,6 +140,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/appointments/upcoming', [patientController::class, 'upcomingPatientAppointments']);
         Route::get('/appointments/previous', [patientController::class, 'previousPatientAppointments']);
         Route::post('/appointments/{id}/cancel', [AppointmentController::class, 'cancelAppointment']);
+        Route::get('/medical-access-code', [PatientController::class, 'getMedicalAccessCode']);
+        Route::post('/medical-access-code/regenerate', [PatientController::class, 'regenerateMedicalAccessCode']);
+        Route::get('/medical-record', [PatientController::class, 'myMedicalRecord']);
     });
 
     // Chat Routes
@@ -159,6 +162,8 @@ Route::post(  '/notifications/test', [NotificationController::class, 'test']);
         Route::get('/pending', [PatientLabRequestController::class, 'pendingRequests']);
         Route::delete('/{labRequest}', [PatientLabRequestController::class, 'destroy']);
         Route::get('/doctors/{doctorId}/service-areas', [DoctorController::class, 'doctorServiceAreas']);
+        Route::get('/prescriptions/pdf', [PatientController::class, 'prescriptionsPdf']);
+
     });
 
 
@@ -169,6 +174,8 @@ Route::post(  '/notifications/test', [NotificationController::class, 'test']);
         Route::post('/appointments/{appointment}/no-show', [AppointmentController::class, 'markAsNoShow']);
         Route::get('/search/patient',[SecretaryController::class, 'searchPatient']);
         Route::post('/appointment',[AppointmentController::class, 'bookBySecretary']);
+        Route::post('/appointments/{id}/cancel', [SecretaryController::class, 'cancelAppointmentBySecretary']
+        );
         });
 
 });
