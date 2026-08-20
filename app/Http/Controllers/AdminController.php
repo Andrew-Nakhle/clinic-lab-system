@@ -83,12 +83,12 @@ class AdminController extends Controller
 
         $activeDoctors = $doctors->where('user.status', UserStatus::Active)->count();
 
-        $bannedDoctors = $doctors->where('user.status', UserStatus::Banned)->count();
+        $InactiveDoctors = $doctors->where('user.status', UserStatus::Inactive)->count();
 
         return response()->json([
             'status' => true,
             'active_doctors_count' => $activeDoctors,
-            'banned_doctors_count' => $bannedDoctors,
+            'banned_doctors_count' => $InactiveDoctors,
             'data' => DoctorResource::collection($doctors),
         ]);
     }
@@ -212,14 +212,14 @@ return response()->json([
             ->where('user.status', UserStatus::Active)
             ->count();
 
-        $bannedPatients = $patients
-            ->where('user.status', UserStatus::Banned)
+        $InactivePatients = $patients
+            ->where('user.status', UserStatus::Inactive)
             ->count();
 
         return response()->json([
             'status' => true,
             'active_patients_count' => $activePatients,
-            'banned_patients_count' => $bannedPatients,
+            'banned_patients_count' => $InactivePatients,
             'data' => PatientResource::collection($patients),
         ]);
     }

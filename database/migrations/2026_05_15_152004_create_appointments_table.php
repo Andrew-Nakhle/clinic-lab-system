@@ -31,11 +31,20 @@ return new class extends Migration
             $table->dateTime('end_at');
 
 
-            $table->unique(
-                ['doctor_id', 'start_at'],
-                'appointments_doctor_start_at_unique'
-            );
+            $table->dateTime('active_start_at')
+                ->nullable()
+                ->storedAs("
+        CASE
+            WHEN status IN ('booked', 'pending_payment')
+            THEN start_at
+            ELSE NULL
+        END
+    ");
 
+            $table->unique(
+                ['doctor_id', 'active_start_at'],
+                'appointments_doctor_active_start_unique'
+            );
             // السعر بصيغة decimal الصحيحة
             $table->decimal('price', 8, 2);
 

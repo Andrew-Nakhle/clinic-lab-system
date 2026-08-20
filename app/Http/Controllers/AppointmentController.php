@@ -360,6 +360,13 @@ class AppointmentController extends Controller
             |--------------------------------------------------------------------------
             | Pending Payment
             |--------------------------------------------------------------------------
+            |
+            | المريض حجز Online لكن لم يكمل الدفع.
+            | عند الإلغاء:
+            | Appointment -> cancelled
+            | Payment -> failed
+            | لا يوجد Refund لأنه لم يتم الدفع أصلاً.
+            |
             */
 
             if ($appointment->status === AppointmentStatus::PendingPayment) {
@@ -387,6 +394,7 @@ class AppointmentController extends Controller
                 ]);
             }
 
+
             /*
             |--------------------------------------------------------------------------
             | Cash Payment
@@ -400,6 +408,10 @@ class AppointmentController extends Controller
 
                 $appointment->update([
                     'status' => AppointmentStatus::Cancelled,
+                ]);
+
+                $payment->update([
+                    'status' => PaymentStatus::Failed,
                 ]);
 
                 return response()->json([
@@ -491,6 +503,8 @@ class AppointmentController extends Controller
                     [
                         'cancellation' => true,
                         'refund_percentage' => $refundPercentage,
+                        'refunded_amount' => $refundAmount,
+                        'retained_amount' => $retainedAmount,
                     ]
                 );
 

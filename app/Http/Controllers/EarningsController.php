@@ -20,16 +20,64 @@ class EarningsController extends Controller
 
         $doctors = DoctorProfile::with('user')->get();
 
-        $earnings = $doctors->map(function ($doctor) use ($doctorPercentage, $clinicPercentage) {
+        $earnings = $doctors->map(function ($doctor) use (
+            $doctorPercentage,
+            $clinicPercentage
+        ) {
 
-            $totalCollected = Payment::where('status', PaymentStatus::Paid->value)
+            $payments = Payment::whereIn('status', [
+                PaymentStatus::Paid->value,
+                PaymentStatus::Refunded->value,
+            ])
                 ->whereHas('appointment', function ($query) use ($doctor) {
                     $query->where('doctor_id', $doctor->id);
                 })
-                ->sum('amount');
+                ->get();
 
-            $doctorEarnings = $totalCollected * ($doctorPercentage / 100);
-            $clinicEarnings = $totalCollected * ($clinicPercentage / 100);
+            /*
+            |--------------------------------------------------------------------------
+            | Original Amount
+            |--------------------------------------------------------------------------
+            */
+
+            $originalTotal = $payments->sum(function ($payment) {
+                return (float) $payment->amount;
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | Refunded Amount
+            |--------------------------------------------------------------------------
+            */
+
+            $totalRefunded = $payments->sum(function ($payment) {
+                return (float) ($payment->refunded_amount ?? 0);
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | Actual Collected Amount
+            |--------------------------------------------------------------------------
+            */
+
+            $totalCollected = $payments->sum(function ($payment) {
+                return (float) (
+                    $payment->retained_amount
+                    ?? $payment->amount
+                );
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | Earnings
+            |--------------------------------------------------------------------------
+            */
+
+            $doctorEarnings =
+                $totalCollected * ($doctorPercentage / 100);
+
+            $clinicEarnings =
+                $totalCollected * ($clinicPercentage / 100);
 
             return [
                 'doctor_id' => $doctor->id,
@@ -38,7 +86,26 @@ class EarningsController extends Controller
                     ? $doctor->user->first_name . ' ' . $doctor->user->last_name
                     : null,
 
-                'total_collected' => number_format($totalCollected, 2, '.', ''),
+                'original_total' => number_format(
+                    $originalTotal,
+                    2,
+                    '.',
+                    ''
+                ),
+
+                'total_refunded' => number_format(
+                    $totalRefunded,
+                    2,
+                    '.',
+                    ''
+                ),
+
+                'total_collected' => number_format(
+                    $totalCollected,
+                    2,
+                    '.',
+                    ''
+                ),
 
                 'doctor_percentage' => $doctorPercentage,
 
@@ -57,28 +124,61 @@ class EarningsController extends Controller
                     '.',
                     ''
                 ),
+
+                'completed_payments' => $payments->count(),
             ];
         });
 
         return response()->json([
+
             'earnings' => $earnings,
 
+            'total_original_amount' => number_format(
+                $earnings->sum(
+                    fn ($doctor) => (float) $doctor['original_total']
+                ),
+                2,
+                '.',
+                ''
+            ),
+
+            'total_refunded_amount' => number_format(
+                $earnings->sum(
+                    fn ($doctor) => (float) $doctor['total_refunded']
+                ),
+                2,
+                '.',
+                ''
+            ),
+
+            'total_collected' => number_format(
+                $earnings->sum(
+                    fn ($doctor) => (float) $doctor['total_collected']
+                ),
+                2,
+                '.',
+                ''
+            ),
+
             'total_doctor_earnings' => number_format(
-                $earnings->sum(fn ($doctor) => (float) $doctor['doctor_earnings']),
+                $earnings->sum(
+                    fn ($doctor) => (float) $doctor['doctor_earnings']
+                ),
                 2,
                 '.',
                 ''
             ),
 
             'total_clinic_earnings' => number_format(
-                $earnings->sum(fn ($doctor) => (float) $doctor['clinic_earnings']),
+                $earnings->sum(
+                    fn ($doctor) => (float) $doctor['clinic_earnings']
+                ),
                 2,
                 '.',
                 ''
             ),
         ]);
     }
-
 
     /**
      * Get earnings for one doctor.
@@ -98,25 +198,72 @@ class EarningsController extends Controller
         }
 
         $payments = Payment::with('appointment')
-            ->where('status', PaymentStatus::Paid->value)
+            ->whereIn('status', [
+                PaymentStatus::Paid->value,
+                PaymentStatus::Refunded->value,
+            ])
             ->whereHas('appointment', function ($query) use ($doctorId) {
                 $query->where('doctor_id', $doctorId);
             })
             ->orderByDesc('completed_at')
             ->get();
 
-        $totalCollected = $payments->sum('amount');
+        /*
+        |--------------------------------------------------------------------------
+        | Financial Calculations
+        |--------------------------------------------------------------------------
+        */
 
-        $doctorEarnings = $totalCollected * ($doctorPercentage / 100);
-        $clinicEarnings = $totalCollected * ($clinicPercentage / 100);
+        $originalTotal = $payments->sum(function ($payment) {
+            return (float) $payment->amount;
+        });
+
+        $totalRefunded = $payments->sum(function ($payment) {
+            return (float) ($payment->refunded_amount ?? 0);
+        });
+
+        $totalCollected = $payments->sum(function ($payment) {
+            return (float) (
+                $payment->retained_amount
+                ?? $payment->amount
+            );
+        });
+
+        $doctorEarnings =
+            $totalCollected * ($doctorPercentage / 100);
+
+        $clinicEarnings =
+            $totalCollected * ($clinicPercentage / 100);
 
         return response()->json([
+
             'doctor' => [
                 'id' => $doctor->id,
+
                 'name' => $doctor->user
                     ? $doctor->user->first_name . ' ' . $doctor->user->last_name
                     : null,
             ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Financial Summary
+            |--------------------------------------------------------------------------
+            */
+
+            'original_total' => number_format(
+                $originalTotal,
+                2,
+                '.',
+                ''
+            ),
+
+            'total_refunded' => number_format(
+                $totalRefunded,
+                2,
+                '.',
+                ''
+            ),
 
             'total_collected' => number_format(
                 $totalCollected,
@@ -124,6 +271,12 @@ class EarningsController extends Controller
                 '.',
                 ''
             ),
+
+            /*
+            |--------------------------------------------------------------------------
+            | Doctor Earnings
+            |--------------------------------------------------------------------------
+            */
 
             'doctor_percentage' => $doctorPercentage,
 
@@ -133,6 +286,12 @@ class EarningsController extends Controller
                 '.',
                 ''
             ),
+
+            /*
+            |--------------------------------------------------------------------------
+            | Clinic Earnings
+            |--------------------------------------------------------------------------
+            */
 
             'clinic_percentage' => $clinicPercentage,
 
@@ -145,13 +304,50 @@ class EarningsController extends Controller
 
             'completed_payments' => $payments->count(),
 
+            /*
+            |--------------------------------------------------------------------------
+            | Payments
+            |--------------------------------------------------------------------------
+            */
+
             'payments' => $payments->map(function ($payment) {
+
                 return [
                     'payment_id' => $payment->id,
+
                     'appointment_id' => $payment->appointment_id,
-                    'amount' => $payment->amount,
+
+                    'original_amount' => number_format(
+                        (float) $payment->amount,
+                        2,
+                        '.',
+                        ''
+                    ),
+
+                    'refunded_amount' => number_format(
+                        (float) ($payment->refunded_amount ?? 0),
+                        2,
+                        '.',
+                        ''
+                    ),
+
+                    'retained_amount' => number_format(
+                        (float) (
+                            $payment->retained_amount
+                            ?? $payment->amount
+                        ),
+                        2,
+                        '.',
+                        ''
+                    ),
+
                     'currency' => $payment->currency,
+
+                    'status' => $payment->status->value,
+
                     'completed_at' => $payment->completed_at,
+
+                    'refunded_at' => $payment->refunded_at,
                 ];
             }),
         ]);
@@ -177,25 +373,81 @@ class EarningsController extends Controller
 
         $doctor = $user->doctor;
 
+        /*
+        |--------------------------------------------------------------------------
+        | Get Paid & Refunded Payments
+        |--------------------------------------------------------------------------
+        |
+        | Paid:
+        | المبلغ لم يتم إرجاعه.
+        |
+        | Refunded:
+        | تم إرجاع جزء أو كل المبلغ.
+        |
+        */
+
         $payments = Payment::with('appointment')
-            ->where('status', PaymentStatus::Paid->value)
+            ->whereIn('status', [
+                PaymentStatus::Paid->value,
+                PaymentStatus::Refunded->value,
+            ])
             ->whereHas('appointment', function ($query) use ($doctor) {
                 $query->where('doctor_id', $doctor->id);
             })
             ->orderByDesc('completed_at')
             ->get();
 
-        $totalCollected = $payments->sum('amount');
+        /*
+        |--------------------------------------------------------------------------
+        | Calculate Earnings
+        |--------------------------------------------------------------------------
+        */
+
+        $totalCollected = $payments->sum(function ($payment) {
+
+            // المبلغ الذي بقي فعلياً بعد الـ refund
+            return (float) (
+                $payment->retained_amount ?? $payment->amount
+            );
+        });
+
+        $totalRefunded = $payments->sum(function ($payment) {
+
+            return (float) (
+                $payment->refunded_amount ?? 0
+            );
+        });
 
         $doctorEarnings = $totalCollected * ($doctorPercentage / 100);
 
         $clinicEarnings = $totalCollected * ($clinicPercentage / 100);
 
         return response()->json([
+
             'doctor' => [
                 'id' => $doctor->id,
                 'name' => $user->first_name . ' ' . $user->last_name,
             ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Financial Summary
+            |--------------------------------------------------------------------------
+            */
+
+            'original_total' => number_format(
+                $payments->sum('amount'),
+                2,
+                '.',
+                ''
+            ),
+
+            'total_refunded' => number_format(
+                $totalRefunded,
+                2,
+                '.',
+                ''
+            ),
 
             'total_collected' => number_format(
                 $totalCollected,
@@ -203,6 +455,12 @@ class EarningsController extends Controller
                 '.',
                 ''
             ),
+
+            /*
+            |--------------------------------------------------------------------------
+            | Doctor
+            |--------------------------------------------------------------------------
+            */
 
             'doctor_percentage' => $doctorPercentage,
 
@@ -212,6 +470,12 @@ class EarningsController extends Controller
                 '.',
                 ''
             ),
+
+            /*
+            |--------------------------------------------------------------------------
+            | Clinic
+            |--------------------------------------------------------------------------
+            */
 
             'clinic_percentage' => $clinicPercentage,
 
@@ -224,13 +488,50 @@ class EarningsController extends Controller
 
             'completed_payments' => $payments->count(),
 
+            /*
+            |--------------------------------------------------------------------------
+            | Payment Details
+            |--------------------------------------------------------------------------
+            */
+
             'payments' => $payments->map(function ($payment) {
+
                 return [
                     'payment_id' => $payment->id,
+
                     'appointment_id' => $payment->appointment_id,
-                    'amount' => $payment->amount,
+
+                    'original_amount' => number_format(
+                        (float) $payment->amount,
+                        2,
+                        '.',
+                        ''
+                    ),
+
+                    'refunded_amount' => number_format(
+                        (float) ($payment->refunded_amount ?? 0),
+                        2,
+                        '.',
+                        ''
+                    ),
+
+                    'retained_amount' => number_format(
+                        (float) (
+                            $payment->retained_amount
+                            ?? $payment->amount
+                        ),
+                        2,
+                        '.',
+                        ''
+                    ),
+
                     'currency' => $payment->currency,
+
+                    'status' => $payment->status->value,
+
                     'completed_at' => $payment->completed_at,
+
+                    'refunded_at' => $payment->refunded_at,
                 ];
             }),
         ]);
