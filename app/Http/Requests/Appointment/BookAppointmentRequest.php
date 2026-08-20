@@ -34,6 +34,10 @@ class BookAppointmentRequest extends FormRequest
 
             'payment_method' => ['required', Rule::enum(PaymentMethod::class),],
 
+            'area_id' => ['nullable', 'exists:areas,id',],
+
+            'address' => ['nullable', 'string',],
+
         ];
     }
 }

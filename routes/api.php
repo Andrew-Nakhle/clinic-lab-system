@@ -119,6 +119,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/earnings', [EarningsController::class, 'myEarnings']);
 
 
+
     });
 
     // Laboratory
@@ -157,6 +158,7 @@ Route::post(  '/notifications/test', [NotificationController::class, 'test']);
         Route::post('/store', [PatientLabRequestController::class, 'store']);
         Route::get('/pending', [PatientLabRequestController::class, 'pendingRequests']);
         Route::delete('/{labRequest}', [PatientLabRequestController::class, 'destroy']);
+        Route::get('/doctors/{doctorId}/service-areas', [DoctorController::class, 'doctorServiceAreas']);
     });
 
 

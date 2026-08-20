@@ -113,6 +113,7 @@ $patientRole=Role::where('name', 'patient')->first();
                 'upcoming_patient_appointments',
                 'today_patient_appointments',
                 'cancel_appointment',
+                'doctor_service_areas'
 
             ]);
         }

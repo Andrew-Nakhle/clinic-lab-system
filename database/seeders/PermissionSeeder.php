@@ -64,6 +64,7 @@ class PermissionSeeder extends Seeder
             'upcoming_patient_appointments',
             'today_patient_appointments',
             'cancel_appointment',
+            'doctor_service_areas',
 
             ///////////////////Secretaty/////////////
             'search_patient',

@@ -68,6 +68,42 @@ class AppointmentController extends Controller
         $validated = $request->validated();
         $doctor = DoctorProfile::find($validated['doctor_id']);
 
+        if (!$doctor) {
+            return response()->json([
+                'message' => 'Doctor not found'
+            ], 404);
+        }
+
+        if ($validated['appointment_type'] === AppointmentType::Home->value) {
+
+            if (empty($validated['area_id'])) {
+                return response()->json([
+                    'message' => 'Area is required for home appointments.'
+                ], 422);
+            }
+
+            if (empty($validated['address'])) {
+                return response()->json([
+                    'message' => 'Address is required for home appointments.'
+                ], 422);
+            }
+
+            $doctorServesArea = $doctor->serviceAreas()
+                ->where('area_id', $validated['area_id'])
+                ->exists();
+
+            if (!$doctorServesArea) {
+                return response()->json([
+                    'message' => 'The doctor does not provide home visits in this area.'
+                ], 422);
+            }
+        }
+
+        if ($validated['appointment_type'] === AppointmentType::Clinic->value) {
+            $validated['area_id'] = null;
+            $validated['address'] = null;
+        }
+
         $start_at = Carbon::parse($validated['start_at']);
         $duration = $validated['appointment_type'] === AppointmentType::Home->value
             ? 60
@@ -138,6 +174,8 @@ class AppointmentController extends Controller
                     'made_by' => AppointmentMadeBy::Patient->value,
                     'price' => $validated['price'],
                     'status' => $status,
+                    'address' => $validated['address'],
+                    'area_id' => $validated['area_id'],
                 ]);
 
                 // Cash
@@ -296,8 +334,21 @@ class AppointmentController extends Controller
             throw $e;
         }
     }
+    ////////////////andrewwwww//////////////////////////
+    public function availableSlots(AvailableSlotsRequest $request)
+    {
+        $validated = $request->validated();
 
+        $doctor = DoctorProfile::findOrFail($validated['doctor_id']);
 
+        $availableSlots = $this->getAvailableSlots(
+            $doctor,
+            $validated['date'],
+            $validated['appointment_type']
+        );
+
+        return response()->json($availableSlots);
+    }
 
     public function cancelAppointment(
         int $id,

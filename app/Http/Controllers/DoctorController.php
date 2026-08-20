@@ -391,5 +391,30 @@ $validated = $request->validated();
             'articles' => ArticleResource::collection($articles),
         ]);
     }
+    public function doctorServiceAreas($doctorId)
+    {
+        $doctor = DoctorProfile::find($doctorId);
+
+        if (!$doctor) {
+            return response()->json([
+                'message' => 'Doctor not found'
+            ], 404);
+        }
+
+        $areas = $doctor->serviceAreas()
+            ->with('area')
+            ->get()
+            ->map(function ($doctorServiceArea) {
+                return [
+                    'id' => $doctorServiceArea->area->id,
+                    'name' => $doctorServiceArea->area->name,
+                ];
+            });
+
+        return response()->json([
+            'doctor_id' => $doctor->id,
+            'areas' => $areas,
+        ]);
+    }   
 
 }

@@ -6,6 +6,7 @@ use App\Enums\Appointment\AppointmentStatus;
 use App\Http\Requests\Appointment\GetAppointmentsRequest;
 use App\Http\Resources\Appointment\AppointmentResource;
 use App\Models\Appointment;
+use App\Models\DoctorProfile;
 use Illuminate\Http\Request;
 
 class PatientController extends Controller
@@ -51,29 +52,29 @@ class PatientController extends Controller
             'appointments' => AppointmentResource::collection($appointments)
         ]);
     }
-    public function previousPatientAppointments(GetAppointmentsRequest $request)
+    public function doctorServiceAreas($doctorId)
     {
-        $query = Appointment::query();
+        $doctor = DoctorProfile::find($doctorId);
 
-        $query->with('doctor.user')
-            ->where('patient_id', auth()->user()->patient->id);
-
-        if ($request->input('appointment_type')) {
-            $query->where('appointment_type', $request->input('appointment_type'));
+        if (!$doctor) {
+            return response()->json([
+                'message' => 'Doctor not found'
+            ], 404);
         }
 
-        $appointments = $query
-            ->where('start_at', '<', now())
-            ->whereIn('status', [
-                AppointmentStatus::Completed->value,
-                AppointmentStatus::Cancelled->value,
-                AppointmentStatus::NoShow->value,
-            ])
-            ->orderByDesc('start_at')
-            ->get();
+        $areas = $doctor->serviceAreas()
+            ->with('area')
+            ->get()
+            ->map(function ($doctorServiceArea) {
+                return [
+                    'id' => $doctorServiceArea->area->id,
+                    'name' => $doctorServiceArea->area->name,
+                ];
+            });
 
         return response()->json([
-            'appointments' => AppointmentResource::collection($appointments)
+            'doctor_id' => $doctor->id,
+            'areas' => $areas,
         ]);
     }
 }

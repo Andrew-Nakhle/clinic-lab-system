@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
-    protected $fillable= ['doctor_id','patient_id','secretary_id','start_at','end_at','status','made_by','price','appointment_type'];
+    protected $fillable= ['doctor_id','patient_id','secretary_id','start_at','end_at','status','made_by','price','appointment_type','address','area_id'];
 
     protected $casts = [
         'made_by' => AppointmentMadeBy::class,
