@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Appointment\AppointmentStatus;
 use App\Enums\Payment\PaymentStatus;
+use App\Models\Appointment;
 use App\Models\DoctorProfile;
 use App\Models\Payment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class EarningsController extends Controller
@@ -358,10 +361,29 @@ class EarningsController extends Controller
      * Get earnings for the currently authenticated doctor.
      * Doctor only
      */
-    public function myEarnings()
+
+
+    public function myEarnings(Request $request)
     {
-        $doctorPercentage = 40;
-        $clinicPercentage = 100 - $doctorPercentage;
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Month & Year
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate([
+            'month' => ['required', 'integer', 'between:1,12'],
+            'year' => ['required', 'integer', 'min:2000', 'max:2100'],
+        ]);
+
+        $month = (int) $validated['month'];
+        $year = (int) $validated['year'];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor
+        |--------------------------------------------------------------------------
+        */
 
         $user = auth()->user();
 
@@ -375,101 +397,164 @@ class EarningsController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Get Paid & Refunded Payments
+        | Requested Month
+        |--------------------------------------------------------------------------
+        */
+
+        $startOfMonth = Carbon::create(
+            $year,
+            $month,
+            1
+        )->startOfMonth();
+
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor Creation Date
+        |--------------------------------------------------------------------------
+        */
+
+        if ($endOfMonth->lt($doctor->created_at)) {
+            return response()->json([
+                'message' => 'No appointments found. The doctor was not registered during this month.'
+            ], 404);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor Fees
+        |--------------------------------------------------------------------------
+        */
+
+        $consultationFee = (float) ($doctor->consultation_fee ?? 0);
+
+        $homeVisitFee = (float) ($doctor->home_visit_fee ?? 0);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor Percentage
+        |--------------------------------------------------------------------------
+        */
+
+        $doctorPercentage = 40;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor Earnings Per Consultation
+        |--------------------------------------------------------------------------
+        */
+
+        $doctorConsultationEarning =
+            $consultationFee * ($doctorPercentage / 100);
+
+        $doctorHomeVisitEarning =
+            $homeVisitFee * ($doctorPercentage / 100);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get Completed Appointments
         |--------------------------------------------------------------------------
         |
-        | Paid:
-        | المبلغ لم يتم إرجاعه.
-        |
-        | Refunded:
-        | تم إرجاع جزء أو كل المبلغ.
+        | فقط المعاينات المكتملة تدخل بحساب الأرباح.
         |
         */
 
-        $payments = Payment::with('appointment')
-            ->whereIn('status', [
-                PaymentStatus::Paid->value,
-                PaymentStatus::Refunded->value,
+        $appointments = Appointment::with('payment')
+            ->where('doctor_id', $doctor->id)
+            ->where(
+                'status',
+                AppointmentStatus::Completed->value
+            )
+            ->where('start_at', '>=', $doctor->created_at)
+            ->whereBetween('start_at', [
+                $startOfMonth,
+                $endOfMonth
             ])
-            ->whereHas('appointment', function ($query) use ($doctor) {
-                $query->where('doctor_id', $doctor->id);
-            })
-            ->orderByDesc('completed_at')
             ->get();
 
         /*
         |--------------------------------------------------------------------------
-        | Calculate Earnings
+        | Separate Clinic / Home Appointments
         |--------------------------------------------------------------------------
         */
 
-        $totalCollected = $payments->sum(function ($payment) {
+        $insideClinicAppointments = $appointments->filter(
+            fn ($appointment) =>
+                $appointment->appointment_type === 'clinic'
+        );
 
-            // المبلغ الذي بقي فعلياً بعد الـ refund
-            return (float) (
-                $payment->retained_amount ?? $payment->amount
-            );
-        });
+        $outsideClinicAppointments = $appointments->filter(
+            fn ($appointment) =>
+                $appointment->appointment_type === 'home'
+        );
 
-        $totalRefunded = $payments->sum(function ($payment) {
+        /*
+        |--------------------------------------------------------------------------
+        | Counts
+        |--------------------------------------------------------------------------
+        */
 
-            return (float) (
-                $payment->refunded_amount ?? 0
-            );
-        });
+        $insideClinicCount =
+            $insideClinicAppointments->count();
 
-        $doctorEarnings = $totalCollected * ($doctorPercentage / 100);
+        $outsideClinicCount =
+            $outsideClinicAppointments->count();
 
-        $clinicEarnings = $totalCollected * ($clinicPercentage / 100);
+        $totalConsultations =
+            $insideClinicCount +
+            $outsideClinicCount;
 
-        return response()->json([
+        /*
+        |--------------------------------------------------------------------------
+        | Calculate Actual Collected Amount
+        |--------------------------------------------------------------------------
+        |
+        | Cash:
+        | payment status ممكن يضل pending لأن الدفع عند العيادة.
+        |
+        | Online Paid:
+        | نأخذ amount.
+        |
+        | Refunded:
+        | نأخذ retained_amount فقط.
+        |
+        */
 
-            'doctor' => [
-                'id' => $doctor->id,
-                'name' => $user->first_name . ' ' . $user->last_name,
-            ],
+        $insideClinicCollected = 0;
+
+        $outsideClinicCollected = 0;
+
+        $totalRefunded = 0;
+
+        foreach ($appointments as $appointment) {
+
+            $payment = $appointment->payment;
 
             /*
             |--------------------------------------------------------------------------
-            | Financial Summary
+            | Default amount
             |--------------------------------------------------------------------------
             */
 
-            'original_total' => number_format(
-                $payments->sum('amount'),
-                2,
-                '.',
-                ''
-            ),
-
-            'total_refunded' => number_format(
-                $totalRefunded,
-                2,
-                '.',
-                ''
-            ),
-
-            'total_collected' => number_format(
-                $totalCollected,
-                2,
-                '.',
-                ''
-            ),
+            $amount = (float) $appointment->price;
 
             /*
             |--------------------------------------------------------------------------
-            | Doctor
+            | Refund
             |--------------------------------------------------------------------------
             */
 
-            'doctor_percentage' => $doctorPercentage,
+            if (
+                $payment &&
+                $payment->status === PaymentStatus::Refunded->value
+            ) {
+                $amount = (float) $payment->retained_amount;
 
-            'doctor_earnings' => number_format(
-                $doctorEarnings,
-                2,
-                '.',
-                ''
-            ),
+                $totalRefunded += (float) (
+                    $payment->refunded_amount ?? 0
+                );
+            }
 
             /*
             |--------------------------------------------------------------------------
@@ -477,63 +562,288 @@ class EarningsController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            'clinic_percentage' => $clinicPercentage,
+            if ($appointment->appointment_type === 'clinic') {
+                $insideClinicCollected += $amount;
+            }
 
-            'clinic_earnings' => number_format(
-                $clinicEarnings,
+            /*
+            |--------------------------------------------------------------------------
+            | Home Visit
+            |--------------------------------------------------------------------------
+            */
+
+            elseif ($appointment->appointment_type === 'home') {
+                $outsideClinicCollected += $amount;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor Earnings - 40%
+        |--------------------------------------------------------------------------
+        */
+
+        $insideClinicEarnings =
+            $insideClinicCollected *
+            ($doctorPercentage / 100);
+
+        $outsideClinicEarnings =
+            $outsideClinicCollected *
+            ($doctorPercentage / 100);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Total Consultation Earnings
+        |--------------------------------------------------------------------------
+        */
+
+        $consultationsEarnings =
+            $insideClinicEarnings +
+            $outsideClinicEarnings;
+
+        /*
+        |--------------------------------------------------------------------------
+        | This Month Total
+        |--------------------------------------------------------------------------
+        */
+
+        $thisMonthTotal =
+            $consultationsEarnings;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Monthly Salary
+        |--------------------------------------------------------------------------
+        */
+
+        $monthlySalary =
+            (float) ($doctor->monthly_salary ?? 0);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Grand Total
+        |--------------------------------------------------------------------------
+        */
+
+        $grandTotal =
+            $monthlySalary +
+            $consultationsEarnings;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+
+        return response()->json([
+
+            /*
+            |--------------------------------------------------------------------------
+            | Doctor
+            |--------------------------------------------------------------------------
+            */
+
+            'doctor' => [
+                'id' => $doctor->id,
+
+                'name' =>
+                    $user->first_name . ' ' .
+                    $user->last_name,
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Requested Month
+            |--------------------------------------------------------------------------
+            */
+
+            'month' => $month,
+
+            'year' => $year,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Top Cards
+            |--------------------------------------------------------------------------
+            */
+
+            'this_month_total' => number_format(
+                $thisMonthTotal,
                 2,
                 '.',
                 ''
             ),
 
-            'completed_payments' => $payments->count(),
+            'outside_clinic' => number_format(
+                $outsideClinicEarnings,
+                2,
+                '.',
+                ''
+            ),
+
+            'inside_clinic' => number_format(
+                $insideClinicEarnings,
+                2,
+                '.',
+                ''
+            ),
 
             /*
             |--------------------------------------------------------------------------
-            | Payment Details
+            | Earnings Overview
             |--------------------------------------------------------------------------
             */
 
-            'payments' => $payments->map(function ($payment) {
+            'earnings_overview' => [
 
-                return [
-                    'payment_id' => $payment->id,
+                /*
+                |--------------------------------------------------------------------------
+                | Outside Clinic
+                |--------------------------------------------------------------------------
+                */
 
-                    'appointment_id' => $payment->appointment_id,
+                'outside_clinic' => [
 
-                    'original_amount' => number_format(
-                        (float) $payment->amount,
-                        2,
-                        '.',
-                        ''
-                    ),
+                    'number_of_consultations' =>
+                        $outsideClinicCount,
 
-                    'refunded_amount' => number_format(
-                        (float) ($payment->refunded_amount ?? 0),
-                        2,
-                        '.',
-                        ''
-                    ),
-
-                    'retained_amount' => number_format(
-                        (float) (
-                            $payment->retained_amount
-                            ?? $payment->amount
+                    'price_per_consultation' =>
+                        number_format(
+                            $homeVisitFee,
+                            2,
+                            '.',
+                            ''
                         ),
+
+                    'doctor_earning_per_consultation' =>
+                        number_format(
+                            $doctorHomeVisitEarning,
+                            2,
+                            '.',
+                            ''
+                        ),
+
+                    'total_amount' =>
+                        number_format(
+                            $outsideClinicEarnings,
+                            2,
+                            '.',
+                            ''
+                        ),
+                ],
+
+                /*
+                |--------------------------------------------------------------------------
+                | Inside Clinic
+                |--------------------------------------------------------------------------
+                */
+
+                'inside_clinic' => [
+
+                    'number_of_consultations' =>
+                        $insideClinicCount,
+
+                    'price_per_consultation' =>
+                        number_format(
+                            $consultationFee,
+                            2,
+                            '.',
+                            ''
+                        ),
+
+                    'doctor_earning_per_consultation' =>
+                        number_format(
+                            $doctorConsultationEarning,
+                            2,
+                            '.',
+                            ''
+                        ),
+
+                    'total_amount' =>
+                        number_format(
+                            $insideClinicEarnings,
+                            2,
+                            '.',
+                            ''
+                        ),
+                ],
+
+                /*
+                |--------------------------------------------------------------------------
+                | Total
+                |--------------------------------------------------------------------------
+                */
+
+                'total' => [
+
+                    'number_of_consultations' =>
+                        $totalConsultations,
+
+                    'total_amount' =>
+                        number_format(
+                            $consultationsEarnings,
+                            2,
+                            '.',
+                            ''
+                        ),
+                ],
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Monthly Payout
+            |--------------------------------------------------------------------------
+            */
+
+            'monthly_payout' => [
+
+                'fixed_monthly_salary' =>
+                    number_format(
+                        $monthlySalary,
                         2,
                         '.',
                         ''
                     ),
 
-                    'currency' => $payment->currency,
+                'consultations_earnings' =>
+                    number_format(
+                        $consultationsEarnings,
+                        2,
+                        '.',
+                        ''
+                    ),
 
-                    'status' => $payment->status->value,
+                'grand_total' =>
+                    number_format(
+                        $grandTotal,
+                        2,
+                        '.',
+                        ''
+                    ),
+            ],
 
-                    'completed_at' => $payment->completed_at,
+            /*
+            |--------------------------------------------------------------------------
+            | Doctor Percentage
+            |--------------------------------------------------------------------------
+            */
 
-                    'refunded_at' => $payment->refunded_at,
-                ];
-            }),
+            'doctor_percentage' =>
+                $doctorPercentage,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Refund
+            |--------------------------------------------------------------------------
+            */
+
+            'total_refunded' =>
+                number_format(
+                    $totalRefunded,
+                    2,
+                    '.',
+                    ''
+                ),
         ]);
     }
 }
