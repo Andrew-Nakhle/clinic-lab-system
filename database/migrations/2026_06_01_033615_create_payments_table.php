@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('provider');
             $table->string('status');//pending,paid,failed,refunded
             $table->decimal('amount', 10, 2);
+            $table->decimal('refunded_amount', 10, 2)->default(0);
+            $table->decimal('retained_amount', 10, 2)->default(0);
             $table->string('currency');
             $table->json('metadata')->nullable();
 

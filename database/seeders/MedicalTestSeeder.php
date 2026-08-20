@@ -53,20 +53,6 @@ class MedicalTestSeeder extends Seeder
                 'display_name' => 'هرمون الغدة الدرقية',
                 'normal_range' => '0.4 - 4.0 mIU/L'
             ],
-            [
-                'name'         => 'Kidney Function',
-                'code'         => 'KFT',
-                'price'        => 12.00,
-                'display_name' => 'وظائف كلى',
-                'normal_range' => '0.6 - 1.2 mg/dL'
-            ],
-            [
-                'name'         => 'Liver Function',
-                'code'         => 'LFT',
-                'price'        => 12.00,
-                'display_name' => 'وظائف كبد',
-                'normal_range' => '7 - 56 U/L'
-            ],
         ];
 
         foreach ($tests as $test) {

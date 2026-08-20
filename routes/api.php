@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\{AiClinicController,
     AuthController,
+    EarningsController,
     NotificationController,
     OtpController,
     PatientController,
@@ -38,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/test-auth', [AuthController::class, 'testAuth']);
 
 
+    Route::get('/doctors/earning', [EarningsController::class, 'allDoctorsEarnings'])->middleware('permission:all_doctors_earnings');
+    Route::get('/doctors/{doctorId}/earning', [EarningsController::class, 'doctorEarnings'])->middleware('permission:doctor_earnings');
 
     Route::get('/patients/', [AdminController::class, 'viewPatients'])->middleware('permission:view_patients','active');
     Route::get('/doctors/', [AdminController::class, 'viewDoctors'])->middleware('permission:view_doctors','active');
@@ -113,6 +116,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
         Route::put('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
         Route::delete('/medical-articles/{id}', [DoctorController::class, 'deleteArticle']);
+        Route::get('/earnings', [EarningsController::class, 'myEarnings']);
+
 
     });
 
@@ -133,6 +138,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/appointments/today', [patientController::class, 'todayPatientAppointments']);
         Route::get('/appointments/upcoming', [patientController::class, 'upcomingPatientAppointments']);
         Route::get('/appointments/previous', [patientController::class, 'previousPatientAppointments']);
+        Route::post('/appointments/{id}/cancel', [AppointmentController::class, 'cancelAppointment']);
     });
 
     // Chat Routes

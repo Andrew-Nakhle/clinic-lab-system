@@ -42,7 +42,8 @@ class RoleAssignPermissionSeeder extends Seeder
                 'view_patients',
                 'view_doctors',
                 'view_sections',
-
+                'all_doctors_earnings',
+                'doctor_earnings'
             ]);
         }
 
@@ -74,7 +75,9 @@ class RoleAssignPermissionSeeder extends Seeder
                 'get_articles_by_category',
                 'get_articles_by_doctor',
                 'view_patients',
-                'view_sections'
+                'view_sections',
+                'all_doctors_earnings',
+                'doctor_earnings'
             ]);
         }
 
@@ -90,9 +93,12 @@ class RoleAssignPermissionSeeder extends Seeder
                 'update_article',
                 'delete_article',
                 'get_articles_by_category',
-                'get_articles_by_doctor'
+                'get_articles_by_doctor',
+                'my_earnings',
+
             ]);
         }
+
         ////patient
 $patientRole=Role::where('name', 'patient')->first();
         if ($patientRole) {
@@ -106,6 +112,7 @@ $patientRole=Role::where('name', 'patient')->first();
                 'previous_patient_appointments',
                 'upcoming_patient_appointments',
                 'today_patient_appointments',
+                'cancel_appointment',
 
             ]);
         }

@@ -20,6 +20,9 @@ class Payment extends Model
         'metadata',
         'completed_at',
         'refunded_at',
+        'refunded_amount',
+        'retained_amount'
+
     ];
     protected $casts = [
         'metadata' => 'array',
@@ -28,19 +31,27 @@ class Payment extends Model
         'completed_at' => 'datetime',
         'refunded_at' => 'datetime',
         'payment_method'=>PaymentMethod::class,
+        'refunded_amount' => 'decimal:2',
+        'retained_amount' => 'decimal:2',
 
     ];
     public function appointment()
     {
         return $this->belongsTo(Appointment::class);
     }
-    public function markAsCompleted($paymentIntentId,$metadata=[]){
-$this->update([
-    'completed_at' => now(),
-    'metadata' => array_merge($this->metadata ?? [],$metadata ),
-    'status'=>PaymentStatus::Paid,
-    'stripe_payment_intent_id' => $paymentIntentId
-]);
+    public function markAsCompleted($paymentIntentId, $metadata = [])
+    {
+        $this->update([
+            'completed_at' => now(),
+            'metadata' => array_merge(
+                $this->metadata ?? [],
+                $metadata
+            ),
+            'status' => PaymentStatus::Paid,
+            'stripe_payment_intent_id' => $paymentIntentId,
+            'refunded_amount' => 0,
+            'retained_amount' => $this->amount,
+        ]);
     }
     public function markAsFailed($metadata=[])
     {
@@ -50,12 +61,24 @@ $this->update([
 
         ]);
     }
-    public function markAsRefunded($metadata=[])
-    {
+    public function markAsRefunded(
+        float $refundedAmount,
+        array $metadata = []
+    ) {
+        $retainedAmount = max(
+            0,
+            (float) $this->amount - $refundedAmount
+        );
+
         $this->update([
             'status' => PaymentStatus::Refunded,
-            'metadata' => array_merge($this->metadata ?? [],$metadata ),
-            'refunded_at' => now()
+            'refunded_amount' => $refundedAmount,
+            'retained_amount' => $retainedAmount,
+            'metadata' => array_merge(
+                $this->metadata ?? [],
+                $metadata
+            ),
+            'refunded_at' => now(),
         ]);
     }
     public function isFinall(){

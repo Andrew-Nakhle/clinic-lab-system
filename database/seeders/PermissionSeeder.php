@@ -25,6 +25,8 @@ class PermissionSeeder extends Seeder
             'view_doctors',
             'view_patients',
             'view_sections',
+            'all_doctors_earnings',
+            'doctor_earnings',
             ///////////////////////////ADMIN////////////////////////////////////////////
             'create_doctors',
             'update_doctors',
@@ -36,6 +38,8 @@ class PermissionSeeder extends Seeder
             'get_articles_by_doctor',
             'view_patients',
             'view_sections',
+            'all_doctors_earnings',
+            'doctor_earnings',
 //////////DOCTOR//////
             'update_doctor_profile',
             'view_doctor_profile',
@@ -47,6 +51,8 @@ class PermissionSeeder extends Seeder
             'delete_article',
             'get_articles_by_category',
             'get_articles_by_doctor',
+            'my_earnings',
+
             /////////////////////patient////////////
             'create_appointment_by_patient',
             'availableSlots',
@@ -57,6 +63,7 @@ class PermissionSeeder extends Seeder
             'previous_patient_appointments',
             'upcoming_patient_appointments',
             'today_patient_appointments',
+            'cancel_appointment',
 
             ///////////////////Secretaty/////////////
             'search_patient',
