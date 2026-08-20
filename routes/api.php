@@ -38,7 +38,7 @@ Route::post('/stripe/webhook', [PaymentController::class, 'webhook']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/test-auth', [AuthController::class, 'testAuth']);
 
-
+    Route::get('/super-admin/sections', [SuperAdminController::class, 'viewSections']);
     Route::get('/doctors/earning', [EarningsController::class, 'allDoctorsEarnings'])->middleware('permission:all_doctors_earnings');
     Route::get('/doctors/{doctorId}/earning', [EarningsController::class, 'doctorEarnings'])->middleware('permission:doctor_earnings');
 
@@ -58,7 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/{id}', [SuperAdminController::class, 'destroy']);
         });
         Route::prefix('sections')->group(function () {
-            Route::get('/', [SuperAdminController::class, 'viewSections']);
+
             Route::patch('/{id}/price', [SuperAdminController::class, 'updateSectionPrice']);
         });
     });
