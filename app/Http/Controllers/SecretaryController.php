@@ -39,11 +39,7 @@ class SecretaryController extends Controller
     ) {
         $secretary = auth()->user()->secretary;
 
-        if (!$secretary) {
-            return response()->json([
-                'message' => 'Secretary profile not found'
-            ], 404);
-        }
+        if (!$secretary) {return response()->json(['message' => 'Secretary profile not found'], 404);}
 
         /*
         |--------------------------------------------------------------------------
@@ -55,12 +51,7 @@ class SecretaryController extends Controller
         $appointment = Appointment::where('id', $id)
             ->whereHas('doctor', function ($query) use ($secretary) {
                 $query->where('section_id', $secretary->section_id);
-            })
-            ->with([
-                'payment',
-                'patient.user',
-            ])
-            ->first();
+            })->with(['payment', 'patient.user',])->first();
 
         if (!$appointment) {
             return response()->json([
@@ -91,10 +82,7 @@ class SecretaryController extends Controller
 
         if ($appointment->start_at <= now()) {
             return response()->json([
-                'message' =>
-                    'This appointment cannot be cancelled because it has already started.'
-            ], 400);
-        }
+                'message' => 'This appointment cannot be cancelled because it has already started.'], 400);}
 
         return DB::transaction(function () use (
             $appointment,
@@ -115,11 +103,7 @@ class SecretaryController extends Controller
                     'status' => AppointmentStatus::Cancelled,
                 ]);
 
-                if ($payment) {
-                    $payment->update([
-                        'status' => PaymentStatus::Failed,
-                    ]);
-                }
+                if ($payment) {$payment->update(['status' => PaymentStatus::Failed,]);}
 
                 /*
                 | Notification to Patient
@@ -172,9 +156,7 @@ class SecretaryController extends Controller
                     'Appointment Cancelled',
                     'Your appointment has been cancelled successfully.',
                     'appointment_cancelled',
-                    [
-                        'appointment_id' => $appointment->id,
-                    ]
+                    ['appointment_id' => $appointment->id,]
                 ));
 
                 return response()->json([
@@ -183,8 +165,7 @@ class SecretaryController extends Controller
                     'retained_amount' => 0,
                     'appointment' => $appointment->fresh(),
                     'payment' => $payment->fresh(),
-                ]);
-            }
+                ]);}
 
             /*
             |--------------------------------------------------------------------------
@@ -227,15 +208,9 @@ class SecretaryController extends Controller
 
                 $originalAmount = (float) $payment->amount;
 
-                $refundAmount = round(
-                    $originalAmount * ($refundPercentage / 100),
-                    2
-                );
+                $refundAmount = round($originalAmount * ($refundPercentage / 100), 2);
 
-                $retainedAmount = round(
-                    $originalAmount - $refundAmount,
-                    2
-                );
+                $retainedAmount = round($originalAmount - $refundAmount, 2);
 
                 /*
                 |--------------------------------------------------------------------------
@@ -245,10 +220,7 @@ class SecretaryController extends Controller
 
                 if ($refundAmount > 0) {
 
-                    $paymentService->refundPayment(
-                        $payment->stripe_payment_intent_id,
-                        (int) round($refundAmount * 100)
-                    );
+                    $paymentService->refundPayment($payment->stripe_payment_intent_id, (int) round($refundAmount * 100));
                 }
 
                 /*
@@ -322,13 +294,11 @@ class SecretaryController extends Controller
                     'payment' => $payment->fresh(),
                 ]);
             }
-
             /*
             |--------------------------------------------------------------------------
             | Unknown Payment State
             |--------------------------------------------------------------------------
             */
-
             return response()->json([
                 'message' => 'Payment state does not allow cancellation.'
             ], 400);

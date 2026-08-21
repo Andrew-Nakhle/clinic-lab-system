@@ -101,7 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('patients')->group(function () {
 
             Route::get('/{id}', [AdminController::class, 'viewPatient']);
-            Route::patch('/{id}', [AdminController::class, 'updatePatient']);
+            Route::patch('/{id}/status', [AdminController::class, 'updatePatient']);
             Route::delete('/{id}', [AdminController::class, 'deletePatient']);
         });
 
