@@ -171,11 +171,15 @@ class DoctorController extends Controller
         $validated = $request->validated();
 
         $patient = PatientProfile::with('user')
-            ->findOrFail($validated['patient_id']);
+            ->where(
+                'medical_record_access_code',
+                $validated['medical_record_access_code']
+            )
+            ->first();
 
-        if ($validated['medical_record_access_code'] != $patient->medical_record_access_code) {
+        if (!$patient) {
             return response()->json([
-                'message' => 'Incorrect code'
+                'message' => 'Incorrect medical record access code'
             ], 401);
         }
 

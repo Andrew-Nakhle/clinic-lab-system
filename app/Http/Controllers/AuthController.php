@@ -232,29 +232,46 @@ class AuthController extends Controller
     public function loginManager(LoginManagersRequest $request)
     {
         $validated = $request->validated();
+
         $user = User::where('email', $validated['email'])->first();
 
         if (!$user) {
-            return response()->json(['message' => 'Invalid Credentials'], 401);
+            return response()->json([
+                'message' => 'Invalid Credentials'
+            ], 401);
         }
 
         if (isset($user->status) && $user->status === UserStatus::deleted) {
             return response()->json(['message' => 'Your account has been deleted.'], 403);
         }
 
-        if (!Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']])) {
+        if (!Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']]))
+        {
             return response()->json(['message' => 'Invalid Credentials'], 401);
         }
-
         if (!$user->hasAnyRole(['patient', 'doctor', 'admin', 'secretary', 'super_admin', 'laboratory'])) {
-            return response()->json(['message' => 'You are not authorized to access this panel.'], 403);
+            return response()->json(['message' => 'You are not authorized to access this panel.'], 403);}
+        $token = $user->createToken('authToken')->plainTextToken;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Section ID for Secretary
+        |--------------------------------------------------------------------------
+        */
+
+        $sectionId = null;
+        if ($user->hasRole('secretary')) {
+            $sectionId = $user->secretary?->section_id;
         }
 
-        $token = $user->createToken('authToken')->plainTextToken;
         return response()->json([
             'message' => 'Login Successful',
+
             'token' => $token,
-            'user' => new LoginResource($user)
+
+            'user' => new LoginResource($user),
+
+            'section_id' => $sectionId,
         ]);
     }
 

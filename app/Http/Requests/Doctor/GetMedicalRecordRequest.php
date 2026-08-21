@@ -23,7 +23,7 @@ class GetMedicalRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'patient_id' => ['required','exists:patient_profiles,id'],
+
             'medical_record_access_code'=>['required','string'],
 
         ];
