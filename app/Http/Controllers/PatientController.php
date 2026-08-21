@@ -55,6 +55,36 @@ class PatientController extends Controller
             'appointments' => AppointmentResource::collection($appointments)
         ]);
     }
+    public function previousPatientAppointments(GetAppointmentsRequest $request)
+    {
+        $patient = auth()->user()->patient;
+
+        if (!$patient) {
+            return response()->json([
+                'message' => 'Patient profile not found'
+            ], 404);
+        }
+
+        $query = Appointment::query();
+
+        $query->with([
+            'doctor.user',
+            'doctor.section',
+        ])->where('patient_id', $patient->id);
+
+        if ($request->input('appointment_type')) {$query->where('appointment_type', $request->input('appointment_type'));
+        }
+
+        $appointments = $query
+            ->where('start_at', '<', now())
+            ->whereIn('status', [AppointmentStatus::Completed->value, AppointmentStatus::Cancelled->value, AppointmentStatus::NoShow->value,])
+            ->orderByDesc('start_at')
+            ->get();
+
+        return response()->json([
+            'appointments' => AppointmentResource::collection($appointments)
+        ]);
+    }
     public function doctorServiceAreas($doctorId)
     {
         $doctor = DoctorProfile::find($doctorId);

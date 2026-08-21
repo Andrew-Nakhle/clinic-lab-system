@@ -39,6 +39,7 @@ class User extends Authenticatable
         'birth_date',
         'otp_code',
         'profile_image',
+        'status',
     ];
 
     public function generateOtpCode(){
