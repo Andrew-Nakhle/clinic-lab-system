@@ -8,6 +8,7 @@ use App\Enums\Appointment\AppointmentType;
 use App\Enums\Payment\PaymentMethod;
 use App\Enums\Payment\PaymentProvider;
 use App\Enums\Payment\PaymentStatus;
+use App\Enums\UserStatus;
 use App\Http\Requests\Appointment\AvailableSlotsRequest;
 use App\Http\Requests\Appointment\BookAppointmentBySecretaryRequest;
 use App\Http\Requests\Appointment\BookAppointmentRequest;
@@ -653,9 +654,21 @@ class AppointmentController extends Controller
             ], 409);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Mark appointment as No-Show
+        |--------------------------------------------------------------------------
+        */
+
         $appointment->update([
             'status' => AppointmentStatus::NoShow->value,
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Handle Payment
+        |--------------------------------------------------------------------------
+        */
 
         $payment = $appointment->payment;
 
@@ -669,12 +682,61 @@ class AppointmentController extends Controller
             ]);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Count Patient No-Shows
+        |--------------------------------------------------------------------------
+        */
+
+        $noShowCount = Appointment::where(
+            'patient_id',
+            $appointment->patient_id
+        )
+            ->where(
+                'status',
+                AppointmentStatus::NoShow->value
+            )
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ban Patient After 3 No-Shows
+        |--------------------------------------------------------------------------
+        */
+
+        $patient = $appointment->patient;
+
+        $user = $patient?->user;
+
+        $banned = false;
+
+        if ($noShowCount >= 3 && $user) {
+
+            $user->update([
+                'status' => UserStatus::Banned->value,
+            ]);
+
+            $banned = true;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+
         return response()->json([
-            'message' => 'Appointment marked as no-show.',
+            'message' => $banned
+                ? 'Appointment marked as no-show. Patient has been banned after 3 no-shows.'
+                : 'Appointment marked as no-show.',
+
+            'no_show_count' => $noShowCount,
+
+            'patient_banned' => $banned,
+
             'appointment' => $appointment->fresh(),
+
             'payment' => $payment?->fresh(),
         ], 200);
     }
-
-
 }

@@ -143,7 +143,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('pending-requests', [LabTechnicianController::class, 'index']);
         Route::post('submit-results/{labRequest}', [LabTechnicianController::class, 'submitResults']);
         Route::get('/financial-totals', [LabTechnicianController::class, 'getFinancialTotals']);
-        Route::get('/patients/{patientId}/latest-pdf', [LabTechnicianController::class, 'exportLatestPatientPdf']);
+
     });
 
     // Patient
@@ -159,6 +159,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/medical-access-code', [PatientController::class, 'getMedicalAccessCode']);
         Route::post('/medical-access-code/regenerate', [PatientController::class, 'regenerateMedicalAccessCode']);
         Route::get('/medical-record', [PatientController::class, 'myMedicalRecord']);
+        Route::get('/patients/{patientId}/latest-pdf', [LabTechnicianController::class, 'exportLatestPatientPdf']);
     });
 
     // Chat Routes
