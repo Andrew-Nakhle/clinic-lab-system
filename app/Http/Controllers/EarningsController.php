@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Appointment\AppointmentStatus;
+use App\Enums\Appointment\AppointmentType;
 use App\Enums\Payment\PaymentStatus;
 use App\Models\Appointment;
 use App\Models\DoctorProfile;
@@ -363,7 +364,7 @@ class EarningsController extends Controller
      */
 
 
-    public function myEarnings()
+    public function myEarnings(Request $request)
     {
         $user = auth()->user();
 
@@ -377,12 +378,39 @@ class EarningsController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Current Month
+        | Validate Month
         |--------------------------------------------------------------------------
         */
 
-        $startOfMonth = now()->startOfMonth();
-        $endOfMonth = now()->endOfMonth();
+        $request->validate([
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2000|max:2100',
+        ]);
+
+        $month = (int) $request->month;
+        $year = (int) $request->year;
+
+        $startOfMonth = Carbon::create($year, $month, 1)
+            ->startOfMonth();
+
+        $endOfMonth = Carbon::create($year, $month, 1)
+            ->endOfMonth();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor Creation Date
+        |--------------------------------------------------------------------------
+        */
+
+        $doctorCreatedAt = $doctor->created_at;
+
+        if ($startOfMonth->lt(
+            Carbon::parse($doctorCreatedAt)->startOfMonth()
+        )) {
+            return response()->json([
+                'message' => 'No appointments found. The doctor was not registered during this month.'
+            ], 404);
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -403,19 +431,7 @@ class EarningsController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Doctor Earnings Per Consultation
-        |--------------------------------------------------------------------------
-        */
-
-        $doctorConsultationEarning =
-            $consultationFee * ($doctorPercentage / 100);
-
-        $doctorHomeVisitEarning =
-            $homeVisitFee * ($doctorPercentage / 100);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Completed Appointments This Month
+        | Get Completed Appointments
         |--------------------------------------------------------------------------
         */
 
@@ -438,11 +454,11 @@ class EarningsController extends Controller
         */
 
         $insideClinicCount = $appointments
-            ->where('appointment_type', 'clinic')
+            ->where('appointment_type', AppointmentType::Clinic->value)
             ->count();
 
         $outsideClinicCount = $appointments
-            ->where('appointment_type', 'home')
+            ->where('appointment_type', AppointmentType::Home->value)
             ->count();
 
         $totalConsultations =
@@ -450,7 +466,7 @@ class EarningsController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Calculate Total Amounts
+        | Amounts
         |--------------------------------------------------------------------------
         */
 
@@ -460,21 +476,28 @@ class EarningsController extends Controller
 
         foreach ($appointments as $appointment) {
 
+            /*
+            |--------------------------------------------------------------
+            | Original appointment price
+            |--------------------------------------------------------------
+            */
+
             $amount = (float) $appointment->price;
 
             /*
-            |--------------------------------------------------------------------------
+            |--------------------------------------------------------------
             | Refund
-            |--------------------------------------------------------------------------
+            |--------------------------------------------------------------
             */
 
             if (
                 $appointment->payment &&
                 $appointment->payment->status === PaymentStatus::Refunded->value
             ) {
-                $amount = (float) $appointment
-                    ->payment
-                    ->retained_amount;
+
+                $amount = (float) (
+                    $appointment->payment->retained_amount ?? 0
+                );
 
                 $totalRefunded += (float) (
                     $appointment->payment->refunded_amount ?? 0
@@ -482,23 +505,29 @@ class EarningsController extends Controller
             }
 
             /*
-            |--------------------------------------------------------------------------
+            |--------------------------------------------------------------
             | Inside Clinic
-            |--------------------------------------------------------------------------
+            |--------------------------------------------------------------
             */
 
-            if ($appointment->appointment_type === 'clinic') {
+            if (
+                $appointment->appointment_type ===
+                AppointmentType::Clinic->value
+            ) {
 
                 $insideClinicTotal += $amount;
             }
 
             /*
-            |--------------------------------------------------------------------------
+            |--------------------------------------------------------------
             | Outside Clinic / Home Visit
-            |--------------------------------------------------------------------------
+            |--------------------------------------------------------------
             */
 
-            elseif ($appointment->appointment_type === 'home') {
+            elseif (
+                $appointment->appointment_type ===
+                AppointmentType::Home->value
+            ) {
 
                 $outsideClinicTotal += $amount;
             }
@@ -520,20 +549,17 @@ class EarningsController extends Controller
         */
 
         $doctorInsideClinicEarnings =
-            $insideClinicTotal *
-            ($doctorPercentage / 100);
+            $insideClinicTotal * ($doctorPercentage / 100);
 
         $doctorOutsideClinicEarnings =
-            $outsideClinicTotal *
-            ($doctorPercentage / 100);
+            $outsideClinicTotal * ($doctorPercentage / 100);
 
         $doctorTotalConsultationEarnings =
-            $totalConsultationsAmount *
-            ($doctorPercentage / 100);
+            $totalConsultationsAmount * ($doctorPercentage / 100);
 
         /*
         |--------------------------------------------------------------------------
-        | Fixed Monthly Salary
+        | Monthly Salary
         |--------------------------------------------------------------------------
         */
 
@@ -547,8 +573,7 @@ class EarningsController extends Controller
         */
 
         $grandTotal =
-            $monthlySalary +
-            $doctorTotalConsultationEarnings;
+            $monthlySalary + $doctorTotalConsultationEarnings;
 
         /*
         |--------------------------------------------------------------------------
@@ -558,17 +583,11 @@ class EarningsController extends Controller
 
         return response()->json([
 
-            /*
-            |--------------------------------------------------------------------------
-            | Doctor
-            |--------------------------------------------------------------------------
-            */
-
             'doctor_id' => $doctor->id,
 
             /*
             |--------------------------------------------------------------------------
-            | Consultation Prices
+            | Doctor Fees
             |--------------------------------------------------------------------------
             */
 
@@ -588,15 +607,15 @@ class EarningsController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | This Month
+            | Selected Month
             |--------------------------------------------------------------------------
             */
 
             'this_month' => [
 
-                'month' => now()->month,
+                'month' => $month,
 
-                'year' => now()->year,
+                'year' => $year,
 
                 /*
                 | Number of consultations
@@ -612,7 +631,7 @@ class EarningsController extends Controller
                     $totalConsultations,
 
                 /*
-                | Total consultation prices
+                | Total amounts
                 */
 
                 'inside_clinic_total' => number_format(
