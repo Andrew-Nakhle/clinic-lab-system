@@ -131,6 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/medical-articles/{id}', [DoctorController::class, 'updateArticle']);
         Route::delete('/medical-articles/{id}', [DoctorController::class, 'deleteArticle']);
         Route::get('/earnings', [EarningsController::class, 'myEarnings']);
+        Route::get('/my-patients/reports', [DoctorController::class, 'getMyPatientsReports']);
 
 
 

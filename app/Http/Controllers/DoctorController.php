@@ -471,5 +471,83 @@ $validated = $request->validated();
             'areas' => $areas,
         ]);
     }
+    public function getMyPatientsReports()
+    {
+        $doctor = auth()->user()->doctor;
 
+        if (!$doctor) {
+            return response()->json([
+                'message' => 'Doctor profile not found'
+            ], 404);
+        }
+
+        $reports = Report::with([
+            'patient.user',
+            'appointment',
+        ])
+            ->where('doctor_id', $doctor->id)
+            ->latest()
+            ->get();
+
+        if ($reports->isEmpty()) {
+            return response()->json([
+                'message' => 'No reports found'
+            ], 404);
+        }
+
+        $patients = $reports
+            ->groupBy('patient_id')
+            ->map(function ($patientReports) {
+
+                $patient = $patientReports->first()->patient;
+                $user = $patient->user;
+
+                // PDF يحتوي جميع تقارير هذا المريض
+                $pdf = Pdf::loadView('pdf.medical_record', [
+                    'patient' => $patient,
+                    'reports' => $patientReports,
+                ]);
+
+                $fileName = 'medical_records/doctor_reports/'
+                    . 'patient_' . $patient->id
+                    . '_' . now()->timestamp
+                    . '.pdf';
+
+                Storage::disk('public')->put(
+                    $fileName,
+                    $pdf->output()
+                );
+
+                return [
+                    'patient_id' => $patient->id,
+
+                    'patient_name' =>
+                        $user->first_name . ' ' . $user->last_name,
+
+                    'gender' => $user->gender,
+
+                    'reports_count' => $patientReports->count(),
+
+                    'reports' => $patientReports->map(function ($report) {
+                        return [
+                            'report_id' => $report->id,
+
+                            'report_date' => $report->appointment
+                                ? $report->appointment->start_at
+                                : $report->created_at,
+                        ];
+                    })->values(),
+
+                    'all_reports_pdf_url' => url(
+                        '/storage/' . $fileName
+                    ),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'doctor_id' => $doctor->id,
+            'patients' => $patients,
+        ]);
+    }
 }
