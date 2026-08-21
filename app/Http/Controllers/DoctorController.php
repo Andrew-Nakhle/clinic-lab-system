@@ -19,7 +19,9 @@ use App\Models\PatientProfile;
 use App\Models\Prescription;
 use App\Models\Report;
 use Barryvdh\DomPDF\Facade\Pdf;
-use http\Env\Request;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
 use mysql_xdevapi\Collection;
 
@@ -162,16 +164,30 @@ class DoctorController extends Controller
         return response()->json(['appointments' => AppointmentResource::collection($appointments)]);
     }
 
+
+
     public function getMedicalRecord(GetMedicalRecordRequest $request)
     {
         $validated = $request->validated();
-        $patient = PatientProfile::with('user')->findOrFail($validated['patient_id']);
+
+        $patient = PatientProfile::with('user')
+            ->findOrFail($validated['patient_id']);
 
         if ($validated['medical_record_access_code'] != $patient->medical_record_access_code) {
-            return response()->json(['message' => 'incorrect code'], 401);
+            return response()->json([
+                'message' => 'Incorrect code'
+            ], 401);
         }
 
-        $reports = $patient->reports()->with('doctor.user',   'doctor.section', 'appointment','images')->latest()->get();
+        $reports = $patient->reports()
+            ->with([
+                'doctor.user',
+                'doctor.section',
+                'appointment',
+                'images'
+            ])
+            ->latest()
+            ->get();
 
         if ($reports->isEmpty()) {
             return response()->json([
@@ -179,12 +195,34 @@ class DoctorController extends Controller
             ], 404);
         }
 
+        // إنشاء PDF
         $pdf = Pdf::loadView('pdf.medical_record', [
             'patient' => $patient,
             'reports' => $reports
         ]);
 
-        return $pdf->download('medical_record.pdf');
+        // اسم الملف
+        $fileName = 'medical_records/medical_record_' . $patient->id . '_' . now()->timestamp . '.pdf';
+
+        // حفظ داخل storage/app/public
+        Storage::disk('public')->put(
+            $fileName,
+            $pdf->output()
+        );
+
+        $user = $patient->user;
+
+        return response()->json([
+            'patient' => [
+                'id' => $patient->id,
+                'name' => $user->first_name . ' ' . $user->last_name,
+                'age' => Carbon::parse($user->birth_date)->age,
+                'gender' => $user->gender,
+                'notes' => $patient->notes,
+            ],
+
+            'pdf_url' => url('/storage/' . $fileName),
+        ]);
     }
     public function getMedicalNotes($id)//pateint profile id
     {

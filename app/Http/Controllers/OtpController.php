@@ -6,7 +6,8 @@ use App\Http\Resources\Auth\LoginResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Psy\Util\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class OtpController extends Controller
 {
@@ -62,7 +63,10 @@ class OtpController extends Controller
 
         return response()->json(['message'=>'resend otp done successfully','otp'=>$otp],200);
     }
-    public function verifyPasswordResetOtp(Request $request)
+
+
+
+        public function verifyPasswordResetOtp(Request $request)
     {
         $validated = $request->validate([
             'phone' => ['required'],
@@ -109,30 +113,21 @@ class OtpController extends Controller
             ], 422);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | OTP Correct
-        |--------------------------------------------------------------------------
-        */
-
-        // Generate temporary reset token
-        $resetToken = Str::random(64);
-
-        Cache::put(
-            'password_reset:' . $resetToken,
-            $user->id,
-            now()->addMinutes(10)
-        );
-
-        // Consume OTP
+        // OTP صحيح
         $user->otp_attempts = 0;
         $user->otp_code = null;
         $user->otp_expires_at = null;
         $user->save();
 
+        // السماح بتغيير كلمة السر لمدة 10 دقائق
+        Cache::put(
+            'password_reset_verified:' . $user->phone,
+            true,
+            now()->addMinutes(10)
+        );
+
         return response()->json([
-            'message' => 'OTP verified successfully.',
-            'reset_token' => $resetToken,
+            'message' => 'OTP verified successfully. You can now reset your password.'
         ], 200);
     }
     public function resendPasswordResetOtp(Request $request)
@@ -149,19 +144,85 @@ class OtpController extends Controller
             ], 404);
         }
 
-        // Generate new OTP
         $user->generateOtpCode();
 
-        // Reset attempts
         $user->otp_attempts = 0;
         $user->save();
 
-        // Send new OTP via WhatsApp
         app(\App\Services\UltraMsgService::class)
             ->sendOtp($user->phone, $user->otp_code);
 
         return response()->json([
             'message' => 'Password reset OTP resent successfully.'
+        ], 200);
+    }
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'phone' => ['required'],
+        ]);
+
+        $user = User::where('phone', $validated['phone'])->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $user->generateOtpCode();
+
+        $user->otp_attempts = 0;
+        $user->save();
+
+        app(\App\Services\UltraMsgService::class)
+            ->sendOtp($user->phone, $user->otp_code);
+
+        return response()->json([
+            'message' => 'Password reset OTP sent successfully.'
+        ], 200);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'phone' => ['required'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+        ]);
+
+        $verified = Cache::get(
+            'password_reset_verified:' . $validated['phone']
+        );
+
+        if (!$verified) {
+            return response()->json([
+                'message' => 'Please verify the OTP first.'
+            ], 403);
+        }
+
+        $user = User::where('phone', $validated['phone'])->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        // استخدام واحد فقط
+        Cache::forget(
+            'password_reset_verified:' . $validated['phone']
+        );
+
+        return response()->json([
+            'message' => 'Password reset successfully.'
         ], 200);
     }
 }

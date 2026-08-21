@@ -30,6 +30,20 @@ Route::prefix('auth')->group(function () {
 
 Route::post('verifyOtp', [OtpController::class, 'verifyLoginOtp']);
 Route::post('resendOtp', [OtpController::class, 'resendLoginOtp']);
+// Forgot Password - Send OTP
+Route::post('/forgot-password', [OtpController::class, 'forgotPassword']);
+
+// Verify Password Reset OTP
+Route::post('/verify-password-reset-otp', [OtpController::class, 'verifyPasswordResetOtp']);
+
+// Resend Password Reset OTP
+Route::post('/resend-password-reset-otp', [OtpController::class, 'resendPasswordResetOtp']);
+
+// Reset Password
+Route::post('/reset-password', [OtpController::class, 'resetPassword']);
+
+
+
 //stripe
 Route::post('/stripe/webhook', [PaymentController::class, 'webhook']);
 
@@ -164,6 +178,7 @@ Route::post(  '/notifications/test', [NotificationController::class, 'test']);
         Route::delete('/{labRequest}', [PatientLabRequestController::class, 'destroy']);
         Route::get('/doctors/{doctorId}/service-areas', [DoctorController::class, 'doctorServiceAreas']);
         Route::get('/prescriptions/pdf', [PatientController::class, 'prescriptionsPdf']);
+        Route::get('/patients/{patientId}/latest-pdf', [LabTechnicianController::class, 'exportLatestPatientPdf']);
 
     });
 

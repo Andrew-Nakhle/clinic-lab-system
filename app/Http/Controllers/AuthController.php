@@ -52,10 +52,10 @@ class AuthController extends Controller
 
         $user = User::create([
             'first_name' => $validated['first_name'],
-            'last_name'  => $validated['last_name'],
-            'phone'      => $validated['phone'],
-            'password'   => $validated['password'],
-            'gender'     => $validated['gender'],
+            'last_name' => $validated['last_name'],
+            'phone' => $validated['phone'],
+            'password' => $validated['password'],
+            'gender' => $validated['gender'],
             'birth_date' => $validated['birth_date'],
             'profile_image' => $validated['profile_image'] ?? null,
         ]);
@@ -74,11 +74,10 @@ class AuthController extends Controller
         ]);
 
 
-
         $user->load('patient');
         return response()->json([
             'message' => 'Patient Registered Successfully',
-            'user'    => new RegisterResource($user)
+            'user' => new RegisterResource($user)
         ], 201);
     }
 
@@ -98,13 +97,13 @@ class AuthController extends Controller
 
         $user = User::create([
             'first_name' => $validated['first_name'],
-            'last_name'  => $validated['last_name'],
-            'email'      => $validated['email'],
-            'phone'      => $validated['phone'],
-            'password'   => $validated['password'],
-            'gender'     => $validated['gender'],
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'password' => $validated['password'],
+            'gender' => $validated['gender'],
             'birth_date' => $validated['birth_date'],
-            'profile_image'    => $data['profile_image'],
+            'profile_image' => $data['profile_image'],
         ]);
 
         $user->assignRole('doctor');
@@ -113,10 +112,10 @@ class AuthController extends Controller
             ->contains('schedule_type', ScheduleType::Home->value);
         $doctor = $user->doctor()->create([
 
-            'section_id'       => $validated['section_id'],
+            'section_id' => $validated['section_id'],
             'experience_years' => $validated['experience_years'],
-            'consultation_fee' =>  $section->base_price,
-            'home_visit_fee'   => $hasHomeVisit
+            'consultation_fee' => $section->base_price,
+            'home_visit_fee' => $hasHomeVisit
                 ? $section->base_price * 2.5
                 : null,
         ]);
@@ -141,16 +140,16 @@ class AuthController extends Controller
         foreach ($validated['schedules'] as $schedule) {
             $doctor->schedules()->create([
                 'schedule_type' => $schedule['schedule_type'],
-                'day_of_week'   => $schedule['day_of_week'],
-                'start_time'    => $schedule['start_time'],
-                'end_time'      => $schedule['end_time'],
+                'day_of_week' => $schedule['day_of_week'],
+                'start_time' => $schedule['start_time'],
+                'end_time' => $schedule['end_time'],
             ]);
         }
 
         $user->load('doctor');
         return response()->json([
             'message' => 'Doctor Registered Successfully',
-            'user'    => new RegisterResource($user)
+            'user' => new RegisterResource($user)
         ], 201);
     }
 
@@ -166,26 +165,26 @@ class AuthController extends Controller
 
         $user = User::create([
             'first_name' => $validated['first_name'],
-            'last_name'  => $validated['last_name'],
-            'email'      => $validated['email'],
-            'phone'      => $validated['phone'],
-            'password'   => $validated['password'],
-            'gender'     => $validated['gender'],
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'password' => $validated['password'],
+            'gender' => $validated['gender'],
             'birth_date' => $validated['birth_date'],
-            'profile_image'    => $validated['profile_image']?? null,
+            'profile_image' => $validated['profile_image'] ?? null,
         ]);
 
         $user->assignRole('secretary');
         $user->secretary()->create([
-            'user_id'    => $user->id,
+            'user_id' => $user->id,
             'section_id' => $validated['section_id'],
-            'image' => $validated['profile_image']?? null,
+            'image' => $validated['profile_image'] ?? null,
         ]);
 
         $user->load('secretary');
         return response()->json([
             'message' => 'Secretary Registered Successfully',
-            'user'    => new RegisterResource($user)
+            'user' => new RegisterResource($user)
         ], 201);
     }
 
@@ -198,7 +197,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Admin Registered Successfully',
-            'user'    => new RegisterResource($user)
+            'user' => new RegisterResource($user)
         ]);
     }
 
@@ -247,15 +246,15 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid Credentials'], 401);
         }
 
-        if (!$user->hasAnyRole(['patient','doctor', 'admin', 'secretary', 'super_admin', 'laboratory'])) {
+        if (!$user->hasAnyRole(['patient', 'doctor', 'admin', 'secretary', 'super_admin', 'laboratory'])) {
             return response()->json(['message' => 'You are not authorized to access this panel.'], 403);
         }
 
         $token = $user->createToken('authToken')->plainTextToken;
         return response()->json([
             'message' => 'Login Successful',
-            'token'   => $token,
-            'user'    => new LoginResource($user)
+            'token' => $token,
+            'user' => new LoginResource($user)
         ]);
     }
 
@@ -266,18 +265,18 @@ class AuthController extends Controller
 
         $user = User::create([
             'first_name' => $validated['first_name'],
-            'last_name'  => $validated['last_name'],
-            'email'      => $validated['email'],
-            'phone'      => $validated['phone'],
-            'password'   => $validated['password'],
-            'gender'     => $validated['gender'],
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'password' => $validated['password'],
+            'gender' => $validated['gender'],
             'birth_date' => $validated['birth_date'],
         ]);
 
         $user->assignRole('laboratory');
         $user->laboratory()->create([
             'license_number' => $validated['license_number'],
-            'section_id'     => $validated['section_id'],
+            'section_id' => $validated['section_id'],
         ]);
 
         $user->load('laboratory');
@@ -300,9 +299,10 @@ class AuthController extends Controller
     {
         return response()->json([
             'is_logged_in' => auth()->check(),
-            'user'         => auth()->user()
+            'user' => auth()->user()
         ]);
     }
+
     public function updatePatientProfile(UpdatePatientProfileRequest $request)
     {
         $user = auth()->user();
@@ -349,82 +349,6 @@ class AuthController extends Controller
             'message' => 'Patient profile updated successfully.'
         ]);
     }
-    public function forgotPassword(Request $request)
-    {
-        $validated = $request->validate([
-            'phone' => ['required'],
-        ]);
 
-        $user = User::where('phone', $validated['phone'])->first();
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'User not found'
-            ], 404);
-        }
-
-        // Generate OTP
-        $user->generateOtpCode();
-
-        $otp = $user->otp_code;
-
-        // Reset attempts
-        $user->otp_attempts = 0;
-        $user->save();
-
-        // Send OTP
-        app(\App\Services\UltraMsgService::class)
-            ->sendOtp($user->phone, $otp);
-
-        return response()->json([
-            'message' => 'Password reset OTP sent successfully.'
-        ], 200);
-    }
-
-    public function resetPassword(Request $request)
-    {
-        $validated = $request->validate([
-            'phone' => ['required'],
-            'reset_token' => ['required'],
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'confirmed',
-            ],
-        ]);
-
-        $userId = Cache::get(
-            'password_reset:' . $validated['reset_token']
-        );
-
-        if (!$userId) {
-            return response()->json([
-                'message' => 'Invalid or expired reset token.'
-            ], 403);
-        }
-
-        $user = User::where('id', $userId)
-            ->where('phone', $validated['phone'])
-            ->first();
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'Invalid reset request.'
-            ], 403);
-        }
-
-        $user->password = Hash::make($validated['password']);
-
-        $user->save();
-
-        // Token can only be used once
-        Cache::forget(
-            'password_reset:' . $validated['reset_token']
-        );
-
-        return response()->json([
-            'message' => 'Password reset successfully.'
-        ], 200);
-    }
 }

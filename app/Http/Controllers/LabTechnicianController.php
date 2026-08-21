@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\LabRequestResource;
 use App\Models\LabRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class LabTechnicianController extends Controller
@@ -18,16 +19,17 @@ class LabTechnicianController extends Controller
             'status' => true,
             'data' => [
                 'full_name' => $user->first_name . ' ' . $user->last_name,
-                'email'     => $user->email,
-                'phone'     => $user->phone,
-                'lab_info'  => $lab ? [
-                    'image'     => $lab->image ? asset('storage/' . $lab->image) : null,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'lab_info' => $lab ? [
+                    'image' => $lab->image ? asset('storage/' . $lab->image) : null,
                     'license_number' => $lab->license_number,
-                    'section_id'     => $lab->section_id,
+                    'section_id' => $lab->section_id,
                 ] : null,
             ]
         ]);
     }
+
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
@@ -39,11 +41,11 @@ class LabTechnicianController extends Controller
 
         // 1. التحقق من صحة البيانات (مع إصلاح الـ Unique للـ Phone)
         $request->validate([
-            'first_name'     => 'sometimes|string|max:255',
-            'last_name'      => 'sometimes|string|max:255',
-            'phone'          => 'sometimes|string|max:15|unique:users,phone,' . $user->id,
+            'first_name' => 'sometimes|string|max:255',
+            'last_name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|string|max:15|unique:users,phone,' . $user->id,
             'license_number' => 'sometimes|string|max:100',
-            'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         // 2. تحديث بيانات المستخدم
@@ -65,9 +67,9 @@ class LabTechnicianController extends Controller
             'status' => true,
             'message' => 'تم التحديث بنجاح',
             'data' => [
-                'owner_name'     => $user->first_name . ' ' . $user->last_name,
+                'owner_name' => $user->first_name . ' ' . $user->last_name,
                 'license_number' => $lab->fresh()->license_number,
-                'image'          => $lab->fresh()->image ? asset('storage/' . $lab->fresh()->image) : null,
+                'image' => $lab->fresh()->image ? asset('storage/' . $lab->fresh()->image) : null,
             ]
         ]);
     }
@@ -80,7 +82,7 @@ class LabTechnicianController extends Controller
             ->latest()
             ->get();
 
-        return response()->json(['data' =>  LabRequestResource::collection( $requests)]);
+        return response()->json(['data' => LabRequestResource::collection($requests)]);
     }
 
     // المخبري يضغط "استلام الطلب" لبدء العمل
@@ -163,18 +165,19 @@ class LabTechnicianController extends Controller
 
         // 5. إنهاء الطلب وحفظ السعر والربح في جدول الطلبات
         $labRequest->update([
-            'status'      => 'completed',
+            'status' => 'completed',
             'total_price' => $totalPrice,
-            'profit'      => $profit
+            'profit' => $profit
         ]);
 
         return response()->json([
-            'success'    => true,
+            'success' => true,
             'totalPrice' => number_format($totalPrice, 2) . '$',
-            'profit'     => number_format($profit, 2) . '$',
-            'message'    => 'Test submitted and profit calculated successfully'
+            'profit' => number_format($profit, 2) . '$',
+            'message' => 'Test submitted and profit calculated successfully'
         ]);
     }
+
     public function getFinancialTotals()
     {
         // 1. جلب المختبر الخاص بالمستخدم الحالي
@@ -192,11 +195,41 @@ class LabTechnicianController extends Controller
 
         // 4. إرجاع الرد
         return response()->json([
-            'success'      => true,
-            'total_price'  => number_format($totalPrice, 2) . '$',
+            'success' => true,
+            'total_price' => number_format($totalPrice, 2) . '$',
             'total_profit' => number_format($totalProfit, 2) . '$',
         ]);
     }
 
+    public function exportLatestPatientPdf($patientProfileId)
+    {
+        // 1. الاستعلام باستخدام العمود الصحيح patient_profile_id
+        $labRequest = LabRequest::where('patient_profile_id', $patientProfileId)
+            ->where('status', 'completed')
+            ->with([
+                'doctor.user',
+                'patient.user', // يفترض وجود علاقة patient() في موديل LabRequest تشير لـ PatientProfile
+                'tests'
+            ])
+            ->latest()
+            ->firstOrFail();
 
+        // 2. تجهيز بيانات المريض
+        $patientProfile = $labRequest->patient;
+        $patientUser = $patientProfile?->user;
+
+        // 3. توليد ملف الـ PDF
+        $pdf = Pdf::loadView('pdf.patient_lab_report', [
+            'labRequest' => $labRequest,
+            'laboratory' => auth()->user()->laboratory,
+            'patientUser' => $patientUser,
+            'patientProfile' => $patientProfile,
+            'doctor' => $labRequest->doctor?->user,
+            'tests' => $labRequest->tests,
+        ]);
+
+        return $pdf->stream("Patient_{$patientProfileId}_Lab_Report.pdf");
+
+
+    }
 }
