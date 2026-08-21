@@ -45,7 +45,7 @@ class EarningsController extends Controller
             */
 
             $originalTotal = $payments->sum(function ($payment) {
-                return (float) $payment->amount;
+                return (float)$payment->amount;
             });
 
             /*
@@ -55,7 +55,7 @@ class EarningsController extends Controller
             */
 
             $totalRefunded = $payments->sum(function ($payment) {
-                return (float) ($payment->refunded_amount ?? 0);
+                return (float)($payment->refunded_amount ?? 0);
             });
 
             /*
@@ -65,7 +65,7 @@ class EarningsController extends Controller
             */
 
             $totalCollected = $payments->sum(function ($payment) {
-                return (float) (
+                return (float)(
                     $payment->retained_amount
                     ?? $payment->amount
                 );
@@ -139,7 +139,7 @@ class EarningsController extends Controller
 
             'total_original_amount' => number_format(
                 $earnings->sum(
-                    fn ($doctor) => (float) $doctor['original_total']
+                    fn($doctor) => (float)$doctor['original_total']
                 ),
                 2,
                 '.',
@@ -148,7 +148,7 @@ class EarningsController extends Controller
 
             'total_refunded_amount' => number_format(
                 $earnings->sum(
-                    fn ($doctor) => (float) $doctor['total_refunded']
+                    fn($doctor) => (float)$doctor['total_refunded']
                 ),
                 2,
                 '.',
@@ -157,7 +157,7 @@ class EarningsController extends Controller
 
             'total_collected' => number_format(
                 $earnings->sum(
-                    fn ($doctor) => (float) $doctor['total_collected']
+                    fn($doctor) => (float)$doctor['total_collected']
                 ),
                 2,
                 '.',
@@ -166,7 +166,7 @@ class EarningsController extends Controller
 
             'total_doctor_earnings' => number_format(
                 $earnings->sum(
-                    fn ($doctor) => (float) $doctor['doctor_earnings']
+                    fn($doctor) => (float)$doctor['doctor_earnings']
                 ),
                 2,
                 '.',
@@ -175,7 +175,7 @@ class EarningsController extends Controller
 
             'total_clinic_earnings' => number_format(
                 $earnings->sum(
-                    fn ($doctor) => (float) $doctor['clinic_earnings']
+                    fn($doctor) => (float)$doctor['clinic_earnings']
                 ),
                 2,
                 '.',
@@ -219,15 +219,15 @@ class EarningsController extends Controller
         */
 
         $originalTotal = $payments->sum(function ($payment) {
-            return (float) $payment->amount;
+            return (float)$payment->amount;
         });
 
         $totalRefunded = $payments->sum(function ($payment) {
-            return (float) ($payment->refunded_amount ?? 0);
+            return (float)($payment->refunded_amount ?? 0);
         });
 
         $totalCollected = $payments->sum(function ($payment) {
-            return (float) (
+            return (float)(
                 $payment->retained_amount
                 ?? $payment->amount
             );
@@ -322,21 +322,21 @@ class EarningsController extends Controller
                     'appointment_id' => $payment->appointment_id,
 
                     'original_amount' => number_format(
-                        (float) $payment->amount,
+                        (float)$payment->amount,
                         2,
                         '.',
                         ''
                     ),
 
                     'refunded_amount' => number_format(
-                        (float) ($payment->refunded_amount ?? 0),
+                        (float)($payment->refunded_amount ?? 0),
                         2,
                         '.',
                         ''
                     ),
 
                     'retained_amount' => number_format(
-                        (float) (
+                        (float)(
                             $payment->retained_amount
                             ?? $payment->amount
                         ),
@@ -404,9 +404,11 @@ class EarningsController extends Controller
 
         $doctorCreatedAt = $doctor->created_at;
 
-        if ($startOfMonth->lt(
-            Carbon::parse($doctorCreatedAt)->startOfMonth()
-        )) {
+        if (
+            $startOfMonth->lt(
+                Carbon::parse($doctorCreatedAt)->startOfMonth()
+            )
+        ) {
             return response()->json([
                 'message' => 'No appointments found. The doctor was not registered during this month.'
             ], 404);
@@ -477,24 +479,23 @@ class EarningsController extends Controller
         foreach ($appointments as $appointment) {
 
             /*
-            |--------------------------------------------------------------
+            |--------------------------------------------------------------------------
             | Original appointment price
-            |--------------------------------------------------------------
+            |--------------------------------------------------------------------------
             */
 
             $amount = (float) $appointment->price;
 
             /*
-            |--------------------------------------------------------------
+            |--------------------------------------------------------------------------
             | Refund
-            |--------------------------------------------------------------
+            |--------------------------------------------------------------------------
             */
 
             if (
                 $appointment->payment &&
-                $appointment->payment->status === PaymentStatus::Refunded->value
+                $appointment->payment->status === PaymentStatus::Refunded
             ) {
-
                 $amount = (float) (
                     $appointment->payment->retained_amount ?? 0
                 );
@@ -505,30 +506,26 @@ class EarningsController extends Controller
             }
 
             /*
-            |--------------------------------------------------------------
+            |--------------------------------------------------------------------------
             | Inside Clinic
-            |--------------------------------------------------------------
+            |--------------------------------------------------------------------------
             */
 
             if (
-                $appointment->appointment_type ===
-                AppointmentType::Clinic->value
+                $appointment->appointment_type === AppointmentType::Clinic
             ) {
-
                 $insideClinicTotal += $amount;
             }
 
             /*
-            |--------------------------------------------------------------
+            |--------------------------------------------------------------------------
             | Outside Clinic / Home Visit
-            |--------------------------------------------------------------
+            |--------------------------------------------------------------------------
             */
 
             elseif (
-                $appointment->appointment_type ===
-                AppointmentType::Home->value
+                $appointment->appointment_type === AppointmentType::Home
             ) {
-
                 $outsideClinicTotal += $amount;
             }
         }
@@ -727,3 +724,4 @@ class EarningsController extends Controller
         ]);
     }
 }
+

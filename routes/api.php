@@ -128,6 +128,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update', [LabTechnicianController::class, 'updateProfile']);
         Route::get('pending-requests', [LabTechnicianController::class, 'index']);
         Route::post('submit-results/{labRequest}', [LabTechnicianController::class, 'submitResults']);
+        Route::get('/financial-totals', [LabTechnicianController::class, 'getFinancialTotals']);
     });
 
     // Patient

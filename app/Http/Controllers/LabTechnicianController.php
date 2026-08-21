@@ -104,8 +104,7 @@ class LabTechnicianController extends Controller
   //      if ($labRequest->laboratory_profile_id !== auth()->user()->laboratoryProfile->id) {
     //        return response()->json(['message' => 'غير مصرح لك بإدخال نتائج هذا الطلب.'], 403);
       //  }
-
-        $request->validate([
+    $request->validate([
             'results' => 'required|array',
             'results.*.medical_test_id' => 'required|exists:medical_tests,id',
             'results.*.result_value' => 'required|string'
@@ -133,7 +132,7 @@ class LabTechnicianController extends Controller
             'results.*.result_value' => 'required|string'
         ]);
 
-        // 2. الدمج الذكي: إذا كان الطلب لا يزال "معلقاً"، نقوم باستلامه تلقائياً
+        // 2. تحديث الحالة إلى جاري المعالجة إذا كان معلقاً
         if ($labRequest->status === 'pending') {
             $labRequest->update([
                 'laboratory_profile_id' => auth()->user()->laboratory->id,
@@ -148,14 +147,60 @@ class LabTechnicianController extends Controller
             ]);
         }
 
-        // 4. إنهاء الطلب وحساب السعر
-        $labRequest->update(['status' => 'completed']);
+        // 4. إعادة تحميل العلاقة لحساب الأسعار الدقيقة
+        $labRequest->load('tests');
+
+        // حساب إجمالي المبلغ
         $totalPrice = $labRequest->tests->sum('price');
+
+        // حساب الأرباح (مثال: إذا كان للمختبر نسبة عمولة محددة أو تكلفة للفحوصات)
+        // سيناريو أ: أرباح كامل المبلغ
+        $profit = $totalPrice;
+
+        // سيناريو ب: لو كان النظام يأخذ نسبة عمولة (مثلاً 15% للتطبيق والباقي ربح للمختبر)
+        $appCommission = $totalPrice * 0.15;
+        $profit = $totalPrice - $appCommission;
+
+        // 5. إنهاء الطلب وحفظ السعر والربح في جدول الطلبات
+        $labRequest->update([
+            'status'      => 'completed',
+            'total_price' => $totalPrice,
+            'profit'      => $profit
+        ]);
 
         return response()->json([
             'success'    => true,
-            'totalPrice' => $totalPrice . '$',
-            'message'    => 'test submitted successfully'
+            'totalPrice' => number_format($totalPrice, 2) . '$',
+            'profit'     => number_format($profit, 2) . '$',
+            'message'    => 'Test submitted and profit calculated successfully'
         ]);
     }
+    public function getFinancialTotals()
+    {
+        // 1. جلب المختبر الخاص بالمستخدم الحالي
+        $laboratory = auth()->user()->laboratory;
+
+        // 2. تجميع المبالغ للطلبات المكتملة فقط
+        $totals = $laboratory->labRequests()
+            ->where('status', 'completed')
+            ->selectRaw('SUM(total_price) as grand_total_price, SUM(profit) as grand_total_profit')
+            ->first();
+
+        // 3. تحضير القيم المالية
+        $totalPrice = $totals->grand_total_price ?? 0;
+        $totalProfit = $totals->grand_total_profit ?? 0;
+
+        // 4. إرجاع الرد
+        return response()->json([
+            'success'      => true,
+            'total_price'  => number_format($totalPrice, 2) . '$',
+            'total_profit' => number_format($totalProfit, 2) . '$',
+            'details'      => [
+                'raw_total_price'  => (float) $totalPrice,
+                'raw_total_profit' => (float) $totalProfit,
+            ]
+        ]);
+    }
+
+
 }
