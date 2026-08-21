@@ -24,4 +24,8 @@ class LaboratoryProfile extends Model
     {
         return $this->belongsTo(Section::class, 'section_id');
     }
+    public function labRequests()
+    {
+        return $this->hasMany(LabRequest::class, 'laboratory_profile_id');
+    }
 }

@@ -9,14 +9,14 @@ class LabRequest extends Model
 {
     use HasFactory;
 
-    protected $table = 'lab_requests';
-
     protected $fillable = [
         'doctor_profile_id',
         'patient_profile_id',
         'laboratory_profile_id',
         'doctor_notes',
-        'status'
+        'status',
+        'total_price', // <-- التأكد من وجوده
+        'profit',      // <-- التأكد من وجوده
     ];
 
     public function doctor()

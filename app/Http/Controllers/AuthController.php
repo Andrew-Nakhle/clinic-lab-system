@@ -20,6 +20,7 @@ use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -347,5 +348,83 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Patient profile updated successfully.'
         ]);
+    }
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'phone' => ['required'],
+        ]);
+
+        $user = User::where('phone', $validated['phone'])->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        // Generate OTP
+        $user->generateOtpCode();
+
+        $otp = $user->otp_code;
+
+        // Reset attempts
+        $user->otp_attempts = 0;
+        $user->save();
+
+        // Send OTP
+        app(\App\Services\UltraMsgService::class)
+            ->sendOtp($user->phone, $otp);
+
+        return response()->json([
+            'message' => 'Password reset OTP sent successfully.'
+        ], 200);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'phone' => ['required'],
+            'reset_token' => ['required'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+        ]);
+
+        $userId = Cache::get(
+            'password_reset:' . $validated['reset_token']
+        );
+
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Invalid or expired reset token.'
+            ], 403);
+        }
+
+        $user = User::where('id', $userId)
+            ->where('phone', $validated['phone'])
+            ->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Invalid reset request.'
+            ], 403);
+        }
+
+        $user->password = Hash::make($validated['password']);
+
+        $user->save();
+
+        // Token can only be used once
+        Cache::forget(
+            'password_reset:' . $validated['reset_token']
+        );
+
+        return response()->json([
+            'message' => 'Password reset successfully.'
+        ], 200);
     }
 }

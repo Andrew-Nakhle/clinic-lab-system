@@ -15,6 +15,8 @@ return new class extends Migration
             $table->foreignId('laboratory_profile_id')->nullable()->constrained('laboratory_profiles')->onDelete('set null');
             $table->text('doctor_notes')->nullable();
             $table->enum('status', ['pending', 'processing', 'completed'])->default('pending');
+            $table->decimal('total_price', 10, 2)->default(0);
+            $table->decimal('profit', 10, 2)->default(0);
             $table->timestamps();
         });
     }

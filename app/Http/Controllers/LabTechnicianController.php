@@ -195,10 +195,6 @@ class LabTechnicianController extends Controller
             'success'      => true,
             'total_price'  => number_format($totalPrice, 2) . '$',
             'total_profit' => number_format($totalProfit, 2) . '$',
-            'details'      => [
-                'raw_total_price'  => (float) $totalPrice,
-                'raw_total_profit' => (float) $totalProfit,
-            ]
         ]);
     }
 
