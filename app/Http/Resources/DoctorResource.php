@@ -42,6 +42,12 @@ class DoctorResource extends JsonResource
                     ];
                 });
             }),
+            'section' => $this->whenLoaded('section', function () {
+                return [
+                    'id' => $this->section->id,
+                    'name' => $this->section->name,
+                ];
+            }),
 
             'user' => $this->whenLoaded('user', function () {
                 return [

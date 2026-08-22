@@ -77,21 +77,21 @@ class AdminController extends Controller
     // ---------------------------
     // Doctors
     // ---------------------------
-    public function viewDoctors()
-    {
-        $doctors = DoctorProfile::with('user', 'schedules', 'certifications' , 'serviceAreas.area')->get();
+        public function viewDoctors()
+        {
+            $doctors = DoctorProfile::with('user', 'schedules', 'certifications' , 'serviceAreas.area','section')->get();
 
-        $activeDoctors = $doctors->where('user.status', UserStatus::Active)->count();
+            $activeDoctors = $doctors->where('user.status', UserStatus::Active)->count();
 
-        $InactiveDoctors = $doctors->where('user.status', UserStatus::Inactive)->count();
+            $InactiveDoctors = $doctors->where('user.status', UserStatus::Inactive)->count();
 
-        return response()->json([
-            'status' => true,
-            'active_doctors_count' => $activeDoctors,
-            'banned_doctors_count' => $InactiveDoctors,
-            'data' => DoctorResource::collection($doctors),
-        ]);
-    }
+            return response()->json([
+                'status' => true,
+                'active_doctors_count' => $activeDoctors,
+                'banned_doctors_count' => $InactiveDoctors,
+                'data' => DoctorResource::collection($doctors),
+            ]);
+        }
     public function ViewDoctorsBySection(Request $request)
     {
 $validatedData = $request->validate([
