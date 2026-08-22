@@ -32,7 +32,7 @@ class ChatController extends Controller
             'receiver_id' => $request->receiver_id,
             'body' => $request->body,
         ]);
-        broadcast(new MessageSent($message))->toOthers();
+        broadcast(new MessageSent($message));
 
         return response()->json(['status' => 'the message is sand', 'message' => $message]);
     }
