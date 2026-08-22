@@ -44,6 +44,8 @@ Route::post('/reset-password', [OtpController::class, 'resetPassword']);
 
 
 
+
+
 //stripe
 Route::post('/stripe/webhook', [PaymentController::class, 'webhook']);
 
@@ -51,6 +53,8 @@ Route::post('/stripe/webhook', [PaymentController::class, 'webhook']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/test-auth', [AuthController::class, 'testAuth']);
+
+    Route::get('/doctors/section/{sectionId}', [AdminController::class, 'getDoctorsBySection']);
 
     Route::get('/super-admin/sections', [SuperAdminController::class, 'viewSections']);
     Route::get('/doctors/earning', [EarningsController::class, 'allDoctorsEarnings'])->middleware('permission:all_doctors_earnings');
@@ -96,7 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/{id}', [AdminController::class, 'viewSecretary']);
             Route::patch('/{id}/status', [AdminController::class, 'updateSecretary']);
             Route::delete('/{id}', [AdminController::class, 'deleteSecretary']);
-            Route::get('/doctors/section/{sectionId}', [AdminController::class, 'getDoctorsBySection']);
+
         });
 
         Route::prefix('patients')->group(function () {
