@@ -14,6 +14,7 @@ use App\Models\LaboratoryProfile;
 use App\Models\PatientProfile;
 use App\Models\SecretaryProfile;
 use App\Models\Section;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -232,18 +233,38 @@ return response()->json([
         return response()->json(['status' => true, 'data' => new PatientResource($patient)]);
     }
 
-    public function updatePatient(int $id)
+    public function updatePatient(int $userId)
     {
-        $patient = PatientProfile::with('user')->find($id);
-        if (!$patient) {
-            return response()->json(['status' => false, 'message' => 'Patient not found'], 404);
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
         }
-        $patient->user->status = ($patient->user->status === UserStatus::Active) ? UserStatus::Inactive : UserStatus::Active;
-        $patient->user->save();
+
+        $patient = PatientProfile::where('user_id', $userId)->first();
+
+        if (!$patient) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Patient not found'
+            ], 404);
+        }
+
+        $user->status = ($user->status === UserStatus::Active)
+            ? UserStatus::Inactive
+            : UserStatus::Active;
+
+        $user->save();
+
         return response()->json([
             'status' => true,
             'message' => 'Status updated successfully',
-            'new_status' => $patient->user->status
+            'user_id' => $user->id,
+            'patient_id' => $patient->id,
+            'new_status' => $user->status
         ]);
     }
 
