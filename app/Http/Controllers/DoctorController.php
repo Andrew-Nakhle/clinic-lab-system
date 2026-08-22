@@ -111,15 +111,35 @@ class DoctorController extends Controller
             $query->where('appointment_type', $request->input('appointment_type'));
         }
 
-        $appointments = $query->whereDate('start_at', today())->orderBy('start_at')->get();
+        $appointments = $query
+            ->whereDate('start_at', today())
+            ->orderBy('start_at')
+            ->get();
 
-        $completedCount = $appointments->where('status', AppointmentStatus::Completed)->count();
-        $pendingCount = $appointments->where('status', AppointmentStatus::Booked)->count();
+        $completedCount = $appointments
+            ->where('status', AppointmentStatus::Completed)
+            ->count();
+
+        $pendingCount = $appointments
+            ->where('status', AppointmentStatus::Booked)
+            ->count();
 
         return response()->json([
             'completed_count' => $completedCount,
             'pending_count' => $pendingCount,
-            'appointments' => AppointmentResource::collection($appointments),
+
+            'appointments' => $appointments->map(function ($appointment) {
+                return [
+                    'appointment_id' => $appointment->id,
+                    'doctor_id' => $appointment->doctor_id,
+                    'patient_id' => $appointment->patient_id,
+                    'start_at' => $appointment->start_at,
+                    'end_at' => $appointment->end_at,
+                    'appointment_type' => $appointment->appointment_type,
+                    'status' => $appointment->status,
+                    'patient' => $appointment->patient,
+                ];
+            }),
         ]);
     }
 
