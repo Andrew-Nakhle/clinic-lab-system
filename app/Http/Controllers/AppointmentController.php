@@ -247,6 +247,20 @@ class AppointmentController extends Controller
 
         $doctor = DoctorProfile::find($validated['doctor_id']);
 
+        $secretary = auth()->user()->secretary;
+
+        if (!$secretary) {
+            return response()->json([
+                'message' => 'Secretary profile not found'
+            ], 404);
+        }
+
+        if ($doctor->section_id !== $secretary->section_id) {
+            return response()->json([
+                'message' => 'You can only book appointments for doctors in your section.'
+            ], 403);
+        }
+
         $start_at = Carbon::parse($validated['start_at']);
         $duration = $validated['appointment_type'] === AppointmentType::Home->value
             ? 60
@@ -334,6 +348,22 @@ class AppointmentController extends Controller
             }
             throw $e;
         }
+    }
+
+    public function availableSlotsSecretary(AvailableSlotsRequest $request)
+    {
+        $validated = $request->validated();
+
+        $doctor = DoctorProfile::findOrFail($validated['doctor_id']);
+
+        $availableSlots = $this->getAvailableSlots(
+            $doctor,
+            $validated['date'],
+            $validated['appointment_type']
+        );
+
+        return response()->json( ['available_slots' => $availableSlots,
+            'doctor_id' => $doctor->id,]);
     }
     ////////////////andrewwwww//////////////////////////
     public function availableSlots(AvailableSlotsRequest $request)

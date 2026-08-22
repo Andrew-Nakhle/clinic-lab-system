@@ -37,30 +37,55 @@ class ChatController extends Controller
 
         return response()->json(['status' => 'the message is sand', 'message' => $message]);
     }
+//    public function myChatUsers()
+//    {
+//        $doctorId = auth()->id();
+//
+//        $userIds = Message::where(function ($query) use ($doctorId) {
+//            $query->where('sender_id', $doctorId)
+//                ->orWhere('receiver_id', $doctorId);
+//        })
+//            ->get(['sender_id', 'receiver_id'])
+//            ->flatMap(function ($message) use ($doctorId) {
+//                return [
+//                    $message->sender_id,
+//                    $message->receiver_id,
+//                ];
+//            })
+//            ->filter(fn ($id) => $id != $doctorId)
+//            ->unique()
+//            ->values();
+//
+//        $users = User::whereIn('id', $userIds)
+//            ->get();
+//
+//        return response()->json([
+//            'users' => $users,
+//        ]);
+//    }
+
     public function myChatUsers()
     {
-        $doctorId = auth()->id();
+        $userId = auth()->id();
 
-        $userIds = Message::where(function ($query) use ($doctorId) {
-            $query->where('sender_id', $doctorId)
-                ->orWhere('receiver_id', $doctorId);
-        })
-            ->get(['sender_id', 'receiver_id'])
-            ->flatMap(function ($message) use ($doctorId) {
-                return [
-                    $message->sender_id,
-                    $message->receiver_id,
-                ];
-            })
-            ->filter(fn ($id) => $id != $doctorId)
+        // 1. Get IDs of users who received messages from this doctor
+        $sentTo = Message::where('sender_id', $userId)->pluck('receiver_id');
+
+        // 2. Get IDs of users who sent messages to this doctor
+        $receivedFrom = Message::where('receiver_id', $userId)->pluck('sender_id');
+
+        // 3. Merge, remove duplicates, and exclude current user ID
+        $userIds = $sentTo->merge($receivedFrom)
             ->unique()
+            ->reject(fn ($id) => $id == $userId)
             ->values();
 
-        $users = User::whereIn('id', $userIds)
-            ->get();
+        // 4. Fetch user details
+        $users = User::whereIn('id', $userIds)->get();
 
         return response()->json([
             'users' => $users,
         ]);
     }
+
 }

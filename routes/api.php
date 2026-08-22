@@ -54,6 +54,8 @@ Route::post('/stripe/webhook', [PaymentController::class, 'webhook']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/test-auth', [AuthController::class, 'testAuth']);
 
+
+    Route::get('/secretaries/appointments/available-slots', [AppointmentController::class, 'availableSlotsSecretary']);
     Route::get('/doctors/section/{sectionId}', [SecretaryController::class, 'getDoctorsBySection']);
 
     Route::get('/super-admin/sections', [SuperAdminController::class, 'viewSections']);
