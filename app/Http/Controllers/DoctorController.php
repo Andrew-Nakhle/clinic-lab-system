@@ -92,7 +92,7 @@ class DoctorController extends Controller
         ]);
     }
 
-    public function todayPatientAppointments(GetAppointmentsRequest $request)
+    public function todayPatientAppointmentss(GetAppointmentsRequest $request)
     {
         $doctor = auth()->user()->doctor;
 
