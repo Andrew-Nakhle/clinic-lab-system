@@ -9,7 +9,9 @@ use App\Enums\UserStatus;
 use App\Events\NotificationSent;
 use App\Http\Requests\Secretary\SearchPatientRequest;
 use App\Http\Resources\Auth\RegisterResource;
+use App\Http\Resources\DoctorResource;
 use App\Models\Appointment;
+use App\Models\DoctorProfile;
 use App\Models\User;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
@@ -303,5 +305,33 @@ class SecretaryController extends Controller
                 'message' => 'Payment state does not allow cancellation.'
             ], 400);
         });
+    }
+
+    public function getDoctorsBySection(int $sectionId)
+    {
+        $doctors = DoctorProfile::with([
+            'user',
+            'section',
+            'schedules',
+            'certifications',
+            'serviceAreas.area'
+        ])
+            ->where('section_id', $sectionId)
+            ->get();
+
+        if ($doctors->isEmpty()) {
+            return response()->json([
+                'message' => 'No doctors found in this section.'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'section' => [
+                'id' => $doctors->first()->section->id,
+                'name' => $doctors->first()->section->name,
+            ],
+            'doctors' => DoctorResource::collection($doctors),
+        ]);
     }
 }

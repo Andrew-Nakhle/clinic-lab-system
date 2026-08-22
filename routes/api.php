@@ -96,6 +96,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/{id}', [AdminController::class, 'viewSecretary']);
             Route::patch('/{id}/status', [AdminController::class, 'updateSecretary']);
             Route::delete('/{id}', [AdminController::class, 'deleteSecretary']);
+            Route::get('/doctors/section/{sectionId}', [AdminController::class, 'getDoctorsBySection']);
         });
 
         Route::prefix('patients')->group(function () {
