@@ -59,6 +59,7 @@ class DoctorResource extends JsonResource
                     'email' => $this->user->email,
                     'gender' => $this->user->gender,
                     'birth_date' => $this->user->birth_date,
+                    'status' => $this->user->status,
 
                     'profile_image_url' => $this->user->profile_image
                         ? url('storage/' . $this->user->profile_image)
