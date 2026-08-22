@@ -25,7 +25,7 @@ class ChatController extends Controller
     {
         // 1. التحقق من البيانات
         $request->validate([
-            'receiver_id' => 'required',
+            'receiver_id' => ['required', 'exists:users,id'],
             'body' => 'required|string',
         ]);
         $message = Message::create([
