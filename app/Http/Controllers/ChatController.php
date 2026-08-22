@@ -12,79 +12,81 @@ use Illuminate\Support\Facades\Auth;
 
 class ChatController extends Controller
 {
-    // دالة لجلب الرسائل بينك وبين شخص معين
+    // Fetch chat history between current user and receiver
     public function index($receiverId)
     {
-        $userId = auth()->id();
-        $doctor = DoctorProfile::where('user_id', $userId)->first();
-        $doctorId = $doctor ? $doctor->id : null;
+        $authId = auth()->id();
+        $doctor = DoctorProfile::where('user_id', $authId)->first();
 
-        return Message::where(function ($query) use ($userId, $receiverId) {
-            $query->where('sender_id', $userId)->where('receiver_id', $receiverId);
-        })->orWhere(function ($query) use ($userId, $doctorId, $receiverId) {
-            $query->where('sender_id', $receiverId)
-                ->where(function ($q) use ($userId, $doctorId) {
-                    $q->where('receiver_id', $userId);
-                    if ($doctorId) {
-                        $q->orWhere('receiver_id', $doctorId);
-                    }
-                });
+        // 1. Logged-in user is a Doctor ($receiverId is Patient's user_id)
+        if ($doctor) {
+            $doctorId = $doctor->id;
+            $patientUserId = $receiverId;
+
+            return Message::where(function ($q) use ($authId, $patientUserId) {
+                // Doctor sent to Patient
+                $q->where('sender_id', $authId)->where('receiver_id', $patientUserId);
+            })->orWhere(function ($q) use ($doctorId, $patientUserId) {
+                // Patient sent to Doctor
+                $q->where('sender_id', $patientUserId)->where('receiver_id', $doctorId);
+            })->orderBy('created_at', 'asc')->get();
+        }
+
+        // 2. Logged-in user is a Patient ($receiverId is Doctor's doctor_id)
+        $patientUserId = $authId;
+        $doctorId = $receiverId;
+        $doctorUserId = DoctorProfile::where('id', $doctorId)->value('user_id');
+
+        return Message::where(function ($q) use ($patientUserId, $doctorId) {
+            // Patient sent to Doctor
+            $q->where('sender_id', $patientUserId)->where('receiver_id', $doctorId);
+        })->orWhere(function ($q) use ($patientUserId, $doctorUserId) {
+            // Doctor sent to Patient
+            $q->where('sender_id', $doctorUserId)->where('receiver_id', $patientUserId);
         })->orderBy('created_at', 'asc')->get();
     }
 
-    // دالة لإرسال رسالة جديدة
+    // Send a new message directly as received from Flutter
     public function sendMessage(Request $request)
     {
-        // 1. التحقق من البيانات
         $request->validate([
             'receiver_id' => 'required',
-            'body' => 'required|string',
+            'body'        => 'required|string',
         ]);
-
-        $receiverId = $request->receiver_id;
-        $doctor = DoctorProfile::find($receiverId);
-        if ($doctor && $doctor->user_id) {
-            $receiverId = $doctor->user_id;
-        }
 
         $message = Message::create([
-            'sender_id' => auth()->id(),
-            'receiver_id' => $receiverId,
-            'body' => $request->body,
+            'sender_id'   => auth()->id(),
+            'receiver_id' => $request->receiver_id,
+            'body'        => $request->body,
         ]);
+
         broadcast(new MessageSent($message));
 
         return response()->json(['status' => 'the message is sand', 'message' => $message]);
     }
 
+    // Fetch unique patients for the logged-in doctor
     public function myChatUsers()
     {
         $userId = auth()->id();
-        $doctor = DoctorProfile::where('user_id', $userId)->first();
-        $doctorId = $doctor ? $doctor->id : null;
+        $doctorId = DoctorProfile::where('user_id', $userId)->value('id');
 
-        // 1. Get IDs of users who received messages from this doctor (or doctor ID)
-        $sentTo = Message::where('sender_id', $userId)
-            ->when($doctorId, fn ($q) => $q->orWhere('sender_id', $doctorId))
-            ->pluck('receiver_id');
+        // Patients who sent messages to this specific doctor_id
+        $patientsWhoMessagedMe = Message::where('receiver_id', $doctorId)->pluck('sender_id');
 
-        // 2. Get IDs of users who sent messages to this doctor (or doctor ID)
-        $receivedFrom = Message::where('receiver_id', $userId)
-            ->when($doctorId, fn ($q) => $q->orWhere('receiver_id', $doctorId))
-            ->pluck('sender_id');
+        // Patients who received messages from this doctor's user_id
+        $patientsIMessaged = Message::where('sender_id', $userId)->pluck('receiver_id');
 
-        // 3. Merge, remove duplicates, and exclude current user ID / doctor ID
-        $userIds = $sentTo->merge($receivedFrom)
+        // Combine Patient User IDs without cross-matching other doctors
+        $patientUserIds = $patientsWhoMessagedMe->merge($patientsIMessaged)
             ->unique()
-            ->reject(fn ($id) => $id == $userId || ($doctorId && $id == $doctorId))
+            ->reject(fn ($id) => $id == $userId || $id == $doctorId)
             ->values();
 
-        // 4. Fetch user details
-        $users = User::whereIn('id', $userIds)->get();
+        $users = User::whereIn('id', $patientUserIds)->get();
 
         return response()->json([
             'users' => $users,
         ]);
     }
-
 }
