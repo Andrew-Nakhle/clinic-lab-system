@@ -146,17 +146,37 @@ return response()->json([
     // ---------------------------
     public function viewSecretaries()
     {
-        $secretaries = SecretaryProfile::with(['user', 'section'])->get();
-        $data = $secretaries->map(function ($secretary) {
-            return [
-                'id' => $secretary->id,
-                'name' => $secretary->user ? ($secretary->user->first_name . ' ' . $secretary->user->last_name) : 'غير معروف',
-                'image' => $secretary->image ? url('storage/' . $secretary->image) : null,
-                'section' => $secretary->section ? $secretary->section->name : 'غير محدد',
-                'status' => $secretary->user->status,
-            ];
-        });
-        return response()->json(['status' => true, 'data' => $data]);
+        $secretaries = SecretaryProfile::with([
+            'user',
+            'section'
+        ])->get();
+
+        return response()->json([
+            'status' => true,
+            'count' => $secretaries->count(),
+            'secretaries' => $secretaries->map(function ($secretary) {
+                return [
+                    'secretary_id' => $secretary->id,
+                    'user_id' => $secretary->user_id,
+
+                    'first_name' => $secretary->user->first_name,
+                    'last_name' => $secretary->user->last_name,
+                    'full_name' => $secretary->user->first_name . ' ' .
+                        $secretary->user->last_name,
+
+                    'phone' => $secretary->user->phone,
+                    'email' => $secretary->user->email,
+                    'gender' => $secretary->user->gender,
+                    'birth_date' => $secretary->user->birth_date,
+                    'status' => $secretary->user->status,
+
+                    'section' => $secretary->section ? [
+                        'id' => $secretary->section->id,
+                        'name' => $secretary->section->name,
+                    ] : null,
+                ];
+            }),
+        ]);
     }
 
     public function viewSecretary(int $id)
