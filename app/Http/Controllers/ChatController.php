@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 
 class ChatController extends Controller
 {
@@ -38,17 +37,13 @@ class ChatController extends Controller
         $doctorId = $receiverId;
         $doctorUserId = DoctorProfile::where('id', $doctorId)->value('user_id');
 
-        $messages = Message::where(function ($q) use ($patientUserId, $doctorId) {
+        return Message::where(function ($q) use ($patientUserId, $doctorId) {
+            // Patient sent to Doctor
             $q->where('sender_id', $patientUserId)->where('receiver_id', $doctorId);
         })->orWhere(function ($q) use ($patientUserId, $doctorUserId) {
+            // Doctor sent to Patient
             $q->where('sender_id', $doctorUserId)->where('receiver_id', $patientUserId);
         })->orderBy('created_at', 'asc')->get();
-
-        $messages->each(function ($message) {
-            $message->body = Crypt::decryptString($message->body);
-        });
-
-        return $messages;
     }
 
     // Send a new message directly as received from Flutter
@@ -62,7 +57,7 @@ class ChatController extends Controller
         $message = Message::create([
             'sender_id'   => auth()->id(),
             'receiver_id' => $request->receiver_id,
-            'body' => Crypt::encryptString($request->body),
+            'body'        => $request->body,
         ]);
 
         broadcast(new MessageSent($message));
